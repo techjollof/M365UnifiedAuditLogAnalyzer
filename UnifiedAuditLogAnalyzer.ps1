@@ -89,21 +89,19 @@ $window.Add_Drop({
                 $global:logDataArray = Load-DataFromFile -FilePath $filePath
 
                 if ($null -ne $global:logDataArray) {
-                    Populate-Filters
+                    Update-Filters
                     Update-TreeView
                     Update-StatusBar -Message "File loaded successfully: $filePath"
                 }
             }
         }
-})
+    })
 
-
-################## Prameters #####################
+################## Parameters #####################
 # Define standard button size
 $buttonWidth = 100
 $buttonHeight = 25
 $uIMargin = 5
-
 
 #################### Window Configuration #################################
 # Styling for a modern UI feel
@@ -127,19 +125,19 @@ $shadowEffect.Opacity = 0.4
 $window.Effect = $shadowEffect
 
 $window.Add_KeyDown({
-    param ($sender, $e)
+        param ($sender, $e)
 
-    if ($e.Key -eq "C" -and ([System.Windows.Input.Keyboard]::IsKeyDown("LeftCtrl") -or [System.Windows.Input.Keyboard]::IsKeyDown("RightCtrl"))) {
-        # Select all text in the Preview Pane
-        $previewPane.SelectAll()
-        # Copy the selected text to the clipboard
-        $previewPane.Copy()
-        # Deselect the text
-        $previewPane.SelectionLength = 0
-        # Update the status bar
-        Update-StatusBar -Message "Text copied to clipboard."
-    }
-})
+        if ($e.Key -eq "C" -and ([System.Windows.Input.Keyboard]::IsKeyDown("LeftCtrl") -or [System.Windows.Input.Keyboard]::IsKeyDown("RightCtrl"))) {
+            # Select all text in the Preview Pane
+            $previewPane.SelectAll()
+            # Copy the selected text to the clipboard
+            $previewPane.Copy()
+            # Deselect the text
+            $previewPane.SelectionLength = 0
+            # Update the status bar
+            Update-StatusBar -Message "Text copied to clipboard."
+        }
+    })
 
 # Create Grid
 $grid = New-Object System.Windows.Controls.Grid
@@ -167,8 +165,7 @@ $grid.Children.Add($statusBar)
 [System.Windows.Controls.Grid]::SetRow($statusBar, 2)
 [System.Windows.Controls.Grid]::SetColumn($statusBar, 1)
 
-
-############t Tree View  Configuration ######################
+############ Tree View Configuration ######################
 
 # Create the Grid for the TreeView section
 $treeViewGrid = New-Object System.Windows.Controls.Grid
@@ -195,7 +192,6 @@ $treeViewLabel.FontWeight = "Bold"
 $treeViewGrid.Children.Add($treeViewLabel)
 [System.Windows.Controls.Grid]::SetRow($treeViewLabel, 0)
 
-
 # Create the TreeView
 $treeView = New-Object System.Windows.Controls.TreeView
 $treeView.ToolTip = "Browse the audit log data hierarchically."
@@ -209,57 +205,54 @@ $treeView.FontSize = "12"
 $treeView.BorderBrush = "DarkGreen"
 $treeView.BorderThickness = "1"
 
-
 # Enable virtualization for TreeView
 $treeView.ItemsPanel = New-Object System.Windows.Controls.ItemsPanelTemplate -ArgumentList @(
     [System.Windows.FrameworkElementFactory]::new([System.Windows.Controls.VirtualizingStackPanel])
     $treeView.SetValue([System.Windows.Controls.VirtualizingStackPanel]::IsVirtualizingProperty, $true)
     $treeView.SetValue([System.Windows.Controls.VirtualizingStackPanel]::VirtualizationModeProperty, [System.Windows.Controls.VirtualizationMode]::Recycling))
 
-
 # Add the TreeView to Row 1 of the TreeView Grid
 $treeViewGrid.Children.Add($treeView)
 [System.Windows.Controls.Grid]::SetRow($treeView, 1)
 
-
-# # Event Handler for TreeView Selection Changed
+# Event Handler for TreeView Selection Changed
 $treeView.Add_SelectedItemChanged({
-    $selectedItem = $treeView.SelectedItem
+        $selectedItem = $treeView.SelectedItem
 
-    if ($selectedItem -and $selectedItem.Tag) {
-        # Update the Preview Pane with the selected log entry
-        Update-PreviewPane -SelectedItem $selectedItem.Tag
-    }
-    else {
-        $previewPane.Text = "No log entry selected."
-    }
-})
+        if ($selectedItem -and $selectedItem.Tag) {
+            # Update the Preview Pane with the selected log entry
+            Update-PreviewPane -SelectedItem $selectedItem.Tag
+        }
+        else {
+            $previewPane.Text = "No log entry selected."
+        }
+    })
 
 $treeView.Add_MouseDoubleClick({
-    param ($sender, $e)
+        param ($sender, $e)
 
-    # Check if the TreeView is empty
-    if ($treeView.Items.Count -eq 0) {
-        # Open a file dialog to browse for a file
-        $openFileDialog = New-Object Microsoft.Win32.OpenFileDialog
-        $openFileDialog.Filter = "CSV Files (*.csv)|*.csv|JSON Files (*.json)|*.json"
-        $openFileDialog.Title = "Select a CSV or JSON file to load"
+        # Check if the TreeView is empty
+        if ($treeView.Items.Count -eq 0) {
+            # Open a file dialog to browse for a file
+            $openFileDialog = New-Object Microsoft.Win32.OpenFileDialog
+            $openFileDialog.Filter = "CSV Files (*.csv)|*.csv|JSON Files (*.json)|*.json"
+            $openFileDialog.Title = "Select a CSV or JSON file to load"
 
-        if ($openFileDialog.ShowDialog() -eq $true) {
-            $filePath = $openFileDialog.FileName
+            if ($openFileDialog.ShowDialog() -eq $true) {
+                $filePath = $openFileDialog.FileName
 
-            if (Test-ValidFile -FilePath $filePath) {
-                $global:logDataArray = Load-DataFromFile -FilePath $filePath
+                if (Test-ValidFile -FilePath $filePath) {
+                    $global:logDataArray = Load-DataFromFile -FilePath $filePath
 
-                if ($null -ne $global:logDataArray) {
-                    Populate-Filters
-                    Update-TreeView
-                    Update-StatusBar -Message "File loaded successfully: $filePath"
+                    if ($null -ne $global:logDataArray) {
+                        Update-Filters
+                        Update-TreeView
+                        Update-StatusBar -Message "File loaded successfully: $filePath"
+                    }
                 }
             }
         }
-    }
-})
+    })
 
 ############ Preview Pane Configuration ##################
 
@@ -308,16 +301,15 @@ $copyButton.Margin = $uIMargin
 $copyButton.HorizontalAlignment = "Right"
 $copyButton.ToolTip = "Copy the preview text to the clipboard"
 $copyButton.Add_Click({
-    # Select all text in the Preview Pane
-    $previewPane.SelectAll()
-    # Copy the selected text to the clipboard
-    $previewPane.Copy()
-    # Deselect the text
-    $previewPane.SelectionLength = 0
-    # Update the status bar
-    Update-StatusBar -Message "Text copied to clipboard."
-})
-
+        # Select all text in the Preview Pane
+        $previewPane.SelectAll()
+        # Copy the selected text to the clipboard
+        $previewPane.Copy()
+        # Deselect the text
+        $previewPane.SelectionLength = 0
+        # Update the status bar
+        Update-StatusBar -Message "Text copied to clipboard."
+    })
 
 # Create the Preview Pane (TextBox)
 $previewPane = New-Object System.Windows.Controls.TextBox
@@ -334,8 +326,6 @@ $previewPane.BorderBrush = [System.Windows.Media.Brushes]::Gray
 $previewPane.BorderThickness = 1
 $previewPane.Background = [System.Windows.Media.Brushes]::White  # Subtle background color for contrast
 
-
-
 # Add the Copy Button to Column 2 of the Label and Button Grid
 $labelButtonGrid.Children.Add($copyButton)
 [System.Windows.Controls.Grid]::SetColumn($copyButton, 2)
@@ -347,8 +337,6 @@ $previewPaneGrid.Children.Add($labelButtonGrid)
 # Add the Preview Pane (TextBox) to Row 1 of the Preview Pane Grid
 $previewPaneGrid.Children.Add($previewPane)
 [System.Windows.Controls.Grid]::SetRow($previewPane, 1)
-
-
 
 ############ Detailed Info Pane Configuration ##################
 
@@ -392,13 +380,9 @@ $detailedInfoTextBox.BorderBrush = [System.Windows.Media.Brushes]::Gray
 $detailedInfoTextBox.BorderThickness = 1
 $detailedInfoTextBox.Background = [System.Windows.Media.Brushes]::WhiteSmoke
 
-
 # Add the TextBox to Row 1 of the Detailed Info Pane Grid
 $detailedInfoPaneGrid.Children.Add($detailedInfoTextBox)
 [System.Windows.Controls.Grid]::SetRow($detailedInfoTextBox, 1)
-
-
-
 
 ################### Filter by Search ###################
 
@@ -442,7 +426,6 @@ $filterButton.Add_Click({
         Update-TreeView  # Call the filter function
     })
 
-
 # Add the search components to the grid
 $searchPanel.Children.Add($searchBox)
 [System.Windows.Controls.Grid]::SetColumn($searchBox, 0)
@@ -450,16 +433,25 @@ $searchPanel.Children.Add($searchBox)
 $searchPanel.Children.Add($filterButton)
 [System.Windows.Controls.Grid]::SetColumn($filterButton, 1)
 
-# # Add the search panel to the grid or parent container
+# Add the search panel to the grid or parent container
 $grid.Children.Add($searchPanel)
 [System.Windows.Controls.Grid]::SetRow($searchPanel, 0)  # Place in Row 0 (Header)
 [System.Windows.Controls.Grid]::SetColumn($searchPanel, 0)  # Place in Column 0
-# [System.Windows.Controls.Grid]::SetColumnSpan($searchPanel, 3)  # Span all 3 columns
-
 
 #################### Filter by RecordType, Operation, Date and Time #####################
 
 # Add Advanced Filter Panel
+# Define StackPanels for CheckBoxes globally
+$recordTypeCheckBoxPanel = New-Object System.Windows.Controls.StackPanel
+$operationsCheckBoxPanel = New-Object System.Windows.Controls.StackPanel
+
+# Flag to prevent recursive events
+# Define these variables at script scope level (outside any function)
+$script:allRecordTypeCheckBox = $null
+$script:allOperationsCheckBox = $null
+$script:isUpdatingCheckBoxes = $false
+# $isUpdatingCheckBoxes = $false
+
 $filterPanel = New-Object System.Windows.Controls.WrapPanel  # Use StackPanel for vertical layout
 $filterPanel.Orientation = "Horizontal"
 $filterPanel.HorizontalAlignment = "Stretch"
@@ -502,15 +494,12 @@ $recordTypeFilter.IsEditable = $true  # Allow text input
 $recordTypeFilter.IsReadOnly = $true  # Prevent editing the text
 $recordTypeFilter.StaysOpenOnEdit = $true  # Keep dropdown open when clicking
 $recordTypeFilter.Add_SelectionChanged({
-    Update-TreeView
-})
-
+        Update-TreeView
+    })
 
 # Add Label and Dropdown to the RecordType Group
 $recordTypeGroup.Children.Add($recordTypeLabel)
 $recordTypeGroup.Children.Add($recordTypeFilter)
-
-
 
 # Group Operations Label and Dropdown
 $operationsGroup = New-Object System.Windows.Controls.StackPanel
@@ -532,9 +521,9 @@ $operationsFilter.Height = 25
 $operationsFilter.Margin = $uIMargin
 $operationsFilter.ToolTip = "Filter by Operations"
 $operationsFilter.FontSize = "14"
-$recordTypeFilter.IsEditable = $true  # Allow text input
-$recordTypeFilter.IsReadOnly = $true  # Prevent editing the text
-$recordTypeFilter.StaysOpenOnEdit = $true  # Keep dropdown open when clicking
+$operationsFilter.IsEditable = $true  # Allow text input
+$operationsFilter.IsReadOnly = $true  # Prevent editing the text
+$operationsFilter.StaysOpenOnEdit = $true  # Keep dropdown open when clicking
 $operationsFilter.Add_SelectionChanged({
         Update-TreeView
     })
@@ -643,8 +632,6 @@ $filterPanel.Children.Add($operationsGroup)
 $filterPanel.Children.Add($dateRangeGroup)
 $filterPanel.Children.Add($timeGroup)
 
-
-
 ################ Other feature ####################
 
 # Add a StackPanel to Row 1, Column 1 for buttons
@@ -657,7 +644,6 @@ $grid.Children.Add($buttonPanel)
 [System.Windows.Controls.Grid]::SetRow($buttonPanel, 0)
 [System.Windows.Controls.Grid]::SetColumn($buttonPanel, 2)
 
-
 # Add Export to JSON Button
 $exportJsonButton = New-Object System.Windows.Controls.Button
 $exportJsonButton.Content = "Export to JSON"
@@ -666,13 +652,13 @@ $exportJsonButton.Height = $buttonHeight
 $exportJsonButton.Margin = $uIMargin
 $exportJsonButton.ToolTip = "Export the displayed data to a JSON file."
 $exportJsonButton.Add_Click({
-    $saveFileDialog = New-Object Microsoft.Win32.SaveFileDialog
-    $saveFileDialog.Filter = "JSON Files (*.json)|*.json"
-    if ($saveFileDialog.ShowDialog() -eq $true) {
-        $logDataArray | ConvertTo-Json -Depth 10 | Out-File -FilePath $saveFileDialog.FileName
-        [System.Windows.MessageBox]::Show("Data exported to JSON successfully!") | Out-Null
-    }
-})
+        $saveFileDialog = New-Object Microsoft.Win32.SaveFileDialog
+        $saveFileDialog.Filter = "JSON Files (*.json)|*.json"
+        if ($saveFileDialog.ShowDialog() -eq $true) {
+            $logDataArray | ConvertTo-Json -Depth 10 | Out-File -FilePath $saveFileDialog.FileName
+            [System.Windows.MessageBox]::Show("Data exported to JSON successfully!") | Out-Null
+        }
+    })
 
 # Add Export to CSV Button
 $exportCsvButton = New-Object System.Windows.Controls.Button
@@ -698,6 +684,9 @@ $refreshButton.Height = $buttonHeight
 $refreshButton.Margin = $uIMargin
 $refreshButton.ToolTip = "Refresh reloads the data sets"
 $refreshButton.Add_Click({
+    # Prevent triggering events while updating
+    $isUpdatingCheckBoxes = $true
+
     # Clear all filters
     $searchBox.Text = ""
     $recordTypeFilter.SelectedIndex = -1
@@ -730,15 +719,38 @@ $refreshButton.Add_Click({
     }
 
     if ($null -ne $global:logDataArray) {
-        Populate-Filters
+        Update-Filters  # Ensure filters are populated correctly
+
+        # Ensure "All" is checked for RecordType filter
+        foreach ($checkBox in $recordTypeCheckBoxPanel.Children) {
+            if ($checkBox.Content -eq "All") {
+                $checkBox.IsChecked = $true
+            } else {
+                $checkBox.IsChecked = $false
+            }
+        }
+        Update-SelectedRecordTypes  # Ensure UI updates correctly
+
+        # Ensure "All" is checked for Operations filter
+        foreach ($checkBox in $operationsCheckBoxPanel.Children) {
+            if ($checkBox.Content -eq "All") {
+                $checkBox.IsChecked = $true
+            } else {
+                $checkBox.IsChecked = $false
+            }
+        }
+        Update-SelectedOperations  # Ensure UI updates correctly
+
         Update-TreeView
-        Update-StatusBar -Message "Data refreshed successfully!"
+        Update-StatusBar -Message "Data refreshed successfully! 'All' selected for RecordType & Operations."
     }
     else {
         Update-StatusBar -Message "No data loaded."
     }
-})
 
+    # Re-enable updates
+    $isUpdatingCheckBoxes = $false
+})
 
 
 # Add Theme Toggle Button
@@ -758,7 +770,6 @@ $themeButton.Add_Click({
             $window.Foreground = [System.Windows.Media.Brushes]::Black
         }
     })
-
 
 # Add Expand/Collapse Buttons
 $expandButton = New-Object System.Windows.Controls.Button
@@ -791,15 +802,49 @@ $clearFiltersButton.Width = $buttonWidth
 $clearFiltersButton.Height = $buttonHeight
 $clearFiltersButton.Margin = $uIMargin
 $clearFiltersButton.Add_Click({
-        $searchBox.Text = ""
-        $recordTypeFilter.SelectedIndex = 0
-        $operationsFilter.SelectedIndex = 0
-        $startDatePicker.SelectedDate = $null
-        $endDatePicker.SelectedDate = $null
-        $startTimeComboBox.Text = "00:00:00"
-        $endTimeComboBox.Text = "23:59:59"
-        Update-TreeView
+    # Prevent triggering events while updating
+    $isUpdatingCheckBoxes = $true
+
+    # Clear search box
+    $searchBox.Text = ""
+
+    # Reset RecordType (RecipientType) filter
+    foreach ($checkBox in $recordTypeCheckBoxPanel.Children) {
+        if ($checkBox.Content -eq "All") {
+            $checkBox.IsChecked = $true  # Ensure "All" is checked
+        } else {
+            $checkBox.IsChecked = $false  # Uncheck all other options
+        }
+    }
+    Update-SelectedRecordTypes  # Ensure UI updates after resetting
+
+    # Reset Operations filter
+    foreach ($checkBox in $operationsCheckBoxPanel.Children) {
+        if ($checkBox.Content -eq "All") {
+            $checkBox.IsChecked = $true  # Ensure "All" is checked
+        } else {
+            $checkBox.IsChecked = $false  # Uncheck all other options
+        }
+    }
+    Update-SelectedOperations  # Ensure UI updates after resetting
+
+    # Reset date and time filters
+    $startDatePicker.SelectedDate = $null
+    $endDatePicker.SelectedDate = $null
+    $startTimeComboBox.Text = "00:00:00"
+    $endTimeComboBox.Text = "23:59:59"
+
+    # Update the TreeView
+    Update-TreeView
+
+    # Re-enable event handlers
+    $isUpdatingCheckBoxes = $false
+
+    # Update the status bar
+    Update-StatusBar -Message "Filters cleared. 'All' is selected for both RecordType and Operations."
 })
+
+
 
 # Add Clear Audit Data Button (NEW: Added for clearing all data)
 $clearLoadedData = New-Object System.Windows.Controls.Button
@@ -809,27 +854,41 @@ $clearLoadedData.Height = $buttonHeight
 $clearLoadedData.Margin = $uIMargin
 $clearLoadedData.ToolTip = "Clear all loaded data and reset the UI"
 $clearLoadedData.Add_Click({
-    # Clear all filters
+    # Prevent triggering events while updating
+    $isUpdatingCheckBoxes = $true
+
+    # Clear search box
     $searchBox.Text = ""
-    $recordTypeFilter.SelectedIndex = -1
-    $operationsFilter.SelectedIndex = -1
+
+    # Fully remove all RecordType (RecipientType) filter options
+    $recordTypeCheckBoxPanel.Children.Clear()
+    Update-SelectedRecordTypes  # Ensure UI updates correctly
+
+    # Fully remove all Operations filter options
+    $operationsCheckBoxPanel.Children.Clear()
+    Update-SelectedOperations  # Ensure UI updates correctly
+
+    # Reset date and time filters
     $startDatePicker.SelectedDate = $null
     $endDatePicker.SelectedDate = $null
     $startTimeComboBox.Text = "00:00:00"
     $endTimeComboBox.Text = "23:59:59"
 
-    # Clear the TreeView
+    # Fully clear the TreeView
     $treeView.Items.Clear()
 
-    # Clear the loaded data
-    $global:logDataArray = $null
+    # Fully reset global data
+    $global:logDataArray = @()  # Empty array instead of $null for stability
 
     # Update the status bar
-    Update-StatusBar -Message "All data cleared. Double-click the TreeView to load new data."
+    Update-StatusBar -Message "All data cleared. No RecordType or Operations entries remain."
+
+    # Re-enable updates
+    $isUpdatingCheckBoxes = $false
 })
 
-# update
 
+# Add buttons to the button panel
 $buttonPanel.Children.Add($exportJsonButton)
 $buttonPanel.Children.Add($exportCsvButton)
 $buttonPanel.Children.Add($refreshButton)
@@ -894,9 +953,7 @@ function Update-StatusBar {
 
     # Update the status text
     $statusBar.Text = $Message
-
 }
-
 
 # Function to Update the Preview Pane
 function Format-PropertyValue {
@@ -974,8 +1031,6 @@ function Update-PreviewPane {
     # Update the Preview Pane
     $previewPane.Text = $previewText -join ""
 }
-
-
 
 # Function to recursively add JSON data to the TreeView
 function Add-TreeNode {
@@ -1146,45 +1201,181 @@ function Load-AuditLogData {
     return $logDataArray
 }
 
+# Function to update the selected RecordTypes
+function Update-SelectedRecordTypes {
+    # Get selected RecordTypes
+    $selectedRecordTypes = $recordTypeCheckBoxPanel.Children | Where-Object { $_.IsChecked -eq $true } | ForEach-Object { $_.Content }
 
+    # Update the ComboBox text
+    $recordTypeFilter.Text = $selectedRecordTypes -join ", "
 
+    # Update the TreeView (or other UI elements)
+    Update-TreeView
+}
+
+function Update-SelectedOperations {
+    # Get selected Operations
+    $selectedOperations = $operationsCheckBoxPanel.Children | Where-Object { $_.IsChecked -eq $true } | ForEach-Object { $_.Content }
+
+    # Update the ComboBox text
+    $operationsFilter.Text = $selectedOperations -join ", "
+
+    # Update the TreeView (or other UI elements)
+    Update-TreeView
+}
 # Function to populate dropdowns with unique values
-function Populate-Filters {
+
+
+function Update-Filters {
     # Clear existing items
     $recordTypeFilter.Items.Clear()
     $operationsFilter.Items.Clear()
 
-    # Add "All" option to both dropdowns
-    $recordTypeFilter.Items.Add("All")
-    $operationsFilter.Items.Add("All")
+    # Clear existing CheckBoxes
+    $recordTypeCheckBoxPanel.Children.Clear()
+    $operationsCheckBoxPanel.Children.Clear()
 
-    # Get unique RecordType and Operations values
+    # Add "All" option to RecordType dropdown
+    $script:allRecordTypeCheckBox = New-Object System.Windows.Controls.CheckBox
+    $script:allRecordTypeCheckBox.Content = "All"
+    $script:allRecordTypeCheckBox.Margin = "2"
+    $script:allRecordTypeCheckBox.IsChecked = $true  # Default to checked
+
+    $script:allRecordTypeCheckBox.Add_Checked({
+        if (-not $script:isUpdatingCheckBoxes) {
+            $script:isUpdatingCheckBoxes = $true
+            foreach ($checkBox in $recordTypeCheckBoxPanel.Children) {
+                if ($checkBox -ne $script:allRecordTypeCheckBox) {
+                    $checkBox.IsChecked = $false
+                }
+            }
+            Update-SelectedRecordTypes
+            $script:isUpdatingCheckBoxes = $false
+        }
+    })
+
+    $script:allRecordTypeCheckBox.Add_Unchecked({
+        if (-not $script:isUpdatingCheckBoxes) {
+            $script:isUpdatingCheckBoxes = $true
+            Update-SelectedRecordTypes
+            $script:isUpdatingCheckBoxes = $false
+        }
+    })
+
+    # Add the "All" CheckBox for RecordType to the StackPanel
+    $recordTypeCheckBoxPanel.Children.Add($script:allRecordTypeCheckBox)
+
+    # Get unique RecordType values
     $uniqueRecordTypes = $logDataArray | ForEach-Object { $_.RecordType } | Sort-Object -Unique
+
+    # Add unique RecordType values with CheckBoxes
+    foreach ($recordType in $uniqueRecordTypes) {
+        $checkBox = New-Object System.Windows.Controls.CheckBox
+        $checkBox.Content = $recordType
+        $checkBox.Margin = "2"
+
+        $checkBox.Add_Checked({
+            if (-not $script:isUpdatingCheckBoxes) {
+                $script:isUpdatingCheckBoxes = $true
+                $script:allRecordTypeCheckBox.IsChecked = $false  # Ensure "All" is unchecked
+                Update-SelectedRecordTypes
+                $script:isUpdatingCheckBoxes = $false
+            }
+        })
+
+        $checkBox.Add_Unchecked({
+            if (-not $script:isUpdatingCheckBoxes) {
+                $script:isUpdatingCheckBoxes = $true
+                if (-not ($recordTypeCheckBoxPanel.Children | Where-Object { $_.IsChecked -eq $true -and $_.Content -ne "All" })) {
+                    $script:allRecordTypeCheckBox.IsChecked = $true  # Recheck "All" if no others are checked
+                }
+                Update-SelectedRecordTypes
+                $script:isUpdatingCheckBoxes = $false
+            }
+        })
+
+        $recordTypeCheckBoxPanel.Children.Add($checkBox)
+    }
+
+    $recordTypeFilter.Items.Add($recordTypeCheckBoxPanel)
+
+    # Add "All" option to Operations dropdown
+    $script:allOperationsCheckBox = New-Object System.Windows.Controls.CheckBox
+    $script:allOperationsCheckBox.Content = "All"
+    $script:allOperationsCheckBox.Margin = "2"
+    $script:allOperationsCheckBox.IsChecked = $true  # Default to checked
+
+    $script:allOperationsCheckBox.Add_Checked({
+        if (-not $script:isUpdatingCheckBoxes) {
+            $script:isUpdatingCheckBoxes = $true
+            foreach ($checkBox in $operationsCheckBoxPanel.Children) {
+                if ($checkBox -ne $script:allOperationsCheckBox) {
+                    $checkBox.IsChecked = $false
+                }
+            }
+            Update-SelectedOperations
+            $script:isUpdatingCheckBoxes = $false
+        }
+    })
+
+    $script:allOperationsCheckBox.Add_Unchecked({
+        if (-not $script:isUpdatingCheckBoxes) {
+            $script:isUpdatingCheckBoxes = $true
+            Update-SelectedOperations
+            $script:isUpdatingCheckBoxes = $false
+        }
+    })
+
+    # Add the "All" CheckBox for Operations to the StackPanel
+    $operationsCheckBoxPanel.Children.Add($script:allOperationsCheckBox)
+
+    # Get unique Operations values
     $uniqueOperations = $logDataArray | ForEach-Object { $_.Operations } | Sort-Object -Unique
 
-    # Add unique values to dropdowns
-    foreach ($recordType in $uniqueRecordTypes) {
-        $recordTypeFilter.Items.Add($recordType)
-    }
+    # Add unique Operations values with CheckBoxes
     foreach ($operation in $uniqueOperations) {
-        $operationsFilter.Items.Add($operation)
+        $checkBox = New-Object System.Windows.Controls.CheckBox
+        $checkBox.Content = $operation
+        $checkBox.Margin = "2"
+
+        $checkBox.Add_Checked({
+            if (-not $script:isUpdatingCheckBoxes) {
+                $script:isUpdatingCheckBoxes = $true
+                $script:allOperationsCheckBox.IsChecked = $false  # Ensure "All" is unchecked
+                Update-SelectedOperations
+                $script:isUpdatingCheckBoxes = $false
+            }
+        })
+
+        $checkBox.Add_Unchecked({
+            if (-not $script:isUpdatingCheckBoxes) {
+                $script:isUpdatingCheckBoxes = $true
+                if (-not ($operationsCheckBoxPanel.Children | Where-Object { $_.IsChecked -eq $true -and $_.Content -ne "All" })) {
+                    $script:allOperationsCheckBox.IsChecked = $true  # Recheck "All" if no others are checked
+                }
+                Update-SelectedOperations
+                $script:isUpdatingCheckBoxes = $false
+            }
+        })
+
+        $operationsCheckBoxPanel.Children.Add($checkBox)
     }
 
-    # Set default selection to "All"
-    $recordTypeFilter.SelectedIndex = 0
-    $operationsFilter.SelectedIndex = 0
+    $operationsFilter.Items.Add($operationsCheckBoxPanel)
 }
 
-# Function to Filter TreeView
-
-
-
+# # # Function to Filter TreeView
 function Update-TreeView {
-    $searchText = $searchBox.Text.ToLower()
-    $selectedRecordType = $recordTypeFilter.SelectedValue
-    $selectedOperation = $operationsFilter.SelectedValue
+    # Get selected RecordTypes, excluding "All" if it's checked
+    $selectedRecordTypes = $recordTypeCheckBoxPanel.Children | Where-Object { $_.IsChecked -eq $true -and $_.Content -ne "All" } | ForEach-Object { $_.Content }
+    $isAllRecordTypesChecked = ($recordTypeCheckBoxPanel.Children | Where-Object { $_.Content -eq "All" }).IsChecked
+
+    # Get selected Operations, excluding "All" if it's checked
+    $selectedOperations = $operationsCheckBoxPanel.Children | Where-Object { $_.IsChecked -eq $true -and $_.Content -ne "All" } | ForEach-Object { $_.Content }
+    $isAllOperationsChecked = ($operationsCheckBoxPanel.Children | Where-Object { $_.Content -eq "All" }).IsChecked
 
     # Combine date and time for start and end filters
+    
     $startDate = $startDatePicker.SelectedDate
     $startTime = $startTimeComboBox.Text
     $endDate = $endDatePicker.SelectedDate
@@ -1197,7 +1388,6 @@ function Update-TreeView {
     if ($null -ne $startDate -and -not [string]::IsNullOrEmpty($startTime)) {
         try {
             $startDateTime = [datetime]::ParseExact("$($startDate.ToString('MM/dd/yyyy')) $startTime", "MM/dd/yyyy HH:mm:ss", $null)
-            # Write-Host "The Start Date time is $($startDateTime)"
         }
         catch {
             Write-Warning "Invalid start date or time format."
@@ -1207,18 +1397,20 @@ function Update-TreeView {
     if ($null -ne $endDate -and -not [string]::IsNullOrEmpty($endTime)) {
         try {
             $endDateTime = [datetime]::ParseExact("$($endDate.ToString('MM/dd/yyyy')) $endTime", "MM/dd/yyyy HH:mm:ss", $null)
-            # Write-Host "The End Date time is $($endDateTime)"
         }
         catch {
             Write-Warning "Invalid end date or time format."
         }
     }
 
+    # Clear the TreeView before populating it
     $treeView.Items.Clear()
 
+    # Iterate through log data and apply filters
     foreach ($logData in $logDataArray) {
         $logDate = $null
 
+        # Parse the log entry's CreationDate
         if (-not [string]::IsNullOrEmpty($logData.CreationDate)) {
             $dateFormats = @("M/d/yyyy h:mm:ss tt", "MM/dd/yyyy HH:mm:ss", "yyyy-MM-ddTHH:mm:ss", "yyyy/MM/dd HH:mm:ss")
 
@@ -1241,19 +1433,19 @@ function Update-TreeView {
         }
 
         # Apply filters
-        $matchesRecordType = ($selectedRecordType -eq "All" -or $logData.RecordType -eq $selectedRecordType)
-        $matchesOperation = ($selectedOperation -eq "All" -or $logData.Operations -eq $selectedOperation)
-        $matchesSearch = ($logData.AuditData -match $searchText -or $logData.ResultIndex -match $searchText)
+        $matchesRecordType = $isAllRecordTypesChecked -or $logData.RecordType -in $selectedRecordTypes
+        $matchesOperation = $isAllOperationsChecked -or $logData.Operations -in $selectedOperations
+        $matchesSearch = ($logData.AuditData -match $searchBox.Text -or $logData.ResultIndex -match $searchBox.Text)
         $matchesDateRange = ($null -eq $startDateTime -or $logDate -ge $startDateTime) -and ($null -eq $endDateTime -or $logDate -le $endDateTime)
 
-        # Write-Host "LogDate: $($logDate) matchesDateRange result against `nStart time: $($startDateTime) `nEndtime :$($endDateTime) matchesDateRange result: $matchesDateRange"
-
+        # If all filters match, add the log entry to the TreeView
         if ($matchesRecordType -and $matchesOperation -and $matchesSearch -and $matchesDateRange) {
             $entryNode = New-Object System.Windows.Controls.TreeViewItem
             $entryNode.Header = "$($logData.RecordType) - $($logData.Operations)"
             $entryNode.Tag = $logData  # Store the log entry data in the Tag property
             $treeView.Items.Add($entryNode)
 
+            # Add child nodes for AuditData and other properties
             foreach ($key in $logData.PSObject.Properties.Name) {
                 if ($key -eq "AuditData") {
                     $auditNode = New-Object System.Windows.Controls.TreeViewItem
@@ -1292,6 +1484,7 @@ function Update-TreeView {
 }
 
 
+
 # Load initial data if provided via -InputData
 if ($PSBoundParameters.ContainsKey('InputData')) {
     if ($InputData -is [string] -and (Test-Path $InputData)) {
@@ -1308,7 +1501,7 @@ if ($PSBoundParameters.ContainsKey('InputData')) {
     }
 
     if ($null -ne $global:logDataArray) {
-        Populate-Filters
+        Update-Filters
         Update-TreeView
         Update-StatusBar -Message "Data loaded successfully from input parameter."
     }
