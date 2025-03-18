@@ -108,7 +108,8 @@ $uIMargin = 5
 $window.FontFamily = "Segoe UI"
 $window.FontSize = 13   # Slightly larger for readability
 $window.FontWeight = "Normal"
-$window.Background = [System.Windows.Media.Brushes]::WhiteSmoke  # Light background for contrast
+# $window.Background = [System.Windows.Media.Brushes]::WhiteSmoke  # Light background for contrast
+# $window.Background = [System.Windows.Media.Brushes]::LightBlue
 
 # Enable resizing while maintaining structure
 $window.ResizeMode = "CanResize"
@@ -253,6 +254,7 @@ $treeView.Add_MouseDoubleClick({
             }
         }
     })
+
 
 ############ Preview Pane Configuration ##################
 
@@ -412,17 +414,17 @@ $searchBox.BorderThickness = "1"
 $searchBox.Padding = "5"
 
 # Add Filter Button
-$filterButton = New-Object System.Windows.Controls.Button
-$filterButton.Content = "Keyword"
-$filterButton.Height = 30
-$filterButton.Margin = $uIMargin
-$filterButton.VerticalAlignment = "Center"
-$filterButton.HorizontalAlignment = "Left"
-$filterButton.FontSize = "14"
-$filterButton.Padding = "10,5,10,5"  # Inner padding (left, top, right, bottom)
-$filterButton.BorderThickness = "1"
-$filterButton.ToolTip = "Filter log entries based on the search term/keyword."
-$filterButton.Add_Click({
+$keywordButton = New-Object System.Windows.Controls.Button
+$keywordButton.Content = "Keyword"
+$keywordButton.Height = 30
+$keywordButton.Margin = $uIMargin
+$keywordButton.VerticalAlignment = "Center"
+$keywordButton.HorizontalAlignment = "Left"
+$keywordButton.FontSize = "14"
+$keywordButton.Padding = "10,5,10,5"  # Inner padding (left, top, right, bottom)
+$keywordButton.BorderThickness = "1"
+$keywordButton.ToolTip = "Filter log entries based on the search term/keyword."
+$keywordButton.Add_Click({
         Update-TreeView  # Call the filter function
     })
 
@@ -430,8 +432,8 @@ $filterButton.Add_Click({
 $searchPanel.Children.Add($searchBox)
 [System.Windows.Controls.Grid]::SetColumn($searchBox, 0)
 
-$searchPanel.Children.Add($filterButton)
-[System.Windows.Controls.Grid]::SetColumn($filterButton, 1)
+$searchPanel.Children.Add($keywordButton)
+[System.Windows.Controls.Grid]::SetColumn($keywordButton, 1)
 
 # Add the search panel to the grid or parent container
 $grid.Children.Add($searchPanel)
@@ -640,6 +642,7 @@ $buttonPanel.Orientation = "Horizontal"
 $buttonPanel.HorizontalAlignment = "Stretch"
 $buttonPanel.VerticalAlignment = "Center"
 $buttonPanel.Margin = "10"
+
 $grid.Children.Add($buttonPanel)
 [System.Windows.Controls.Grid]::SetRow($buttonPanel, 0)
 [System.Windows.Controls.Grid]::SetColumn($buttonPanel, 2)
@@ -753,23 +756,114 @@ $refreshButton.Add_Click({
 })
 
 
+# # Add Theme Toggle Button
+# $themeButton = New-Object System.Windows.Controls.Button
+# $themeButton.Content = "Toggle Theme"
+# $themeButton.Width = $buttonWidth
+# $themeButton.Height = $buttonHeight
+# $themeButton.ToolTip = "Change UI to dark mode"
+# $themeButton.Margin = $uIMargin
+# $themeButton.Add_Click({
+#         if ($window.Background -eq [System.Windows.Media.Brushes]::White) {
+#             $window.Background = [System.Windows.Media.Brushes]::Black
+#             $window.Foreground = [System.Windows.Media.Brushes]::White
+#         }
+#         else {
+#             $window.Background = [System.Windows.Media.Brushes]::White
+#             $window.Foreground = [System.Windows.Media.Brushes]::Black
+#         }
+#     })
+
+
 # Add Theme Toggle Button
 $themeButton = New-Object System.Windows.Controls.Button
 $themeButton.Content = "Toggle Theme"
 $themeButton.Width = $buttonWidth
 $themeButton.Height = $buttonHeight
-$themeButton.ToolTip = "Change UI to dark mode"
+$themeButton.ToolTip = "Switch between different UI themes"
 $themeButton.Margin = $uIMargin
+
+# Add Custom Color Picker Button
+$customThemeButton = New-Object System.Windows.Controls.Button
+$customThemeButton.Content = "Custom Theme"
+$customThemeButton.Width = $buttonWidth
+$customThemeButton.Height = $buttonHeight
+$customThemeButton.ToolTip = "Pick custom colors for UI"
+$customThemeButton.Margin = $uIMargin
+
+# Define themes with both Background & Text color
+$themes = @(
+    @{Background = [System.Windows.Media.Brushes]::White; Foreground = [System.Windows.Media.Brushes]::Black},  # Light Mode
+    @{Background = [System.Windows.Media.Brushes]::Black; Foreground = [System.Windows.Media.Brushes]::White},  # Dark Mode
+    @{Background = [System.Windows.Media.Brushes]::Gray; Foreground = [System.Windows.Media.Brushes]::Yellow},  # High Contrast
+    @{Background = [System.Windows.Media.Brushes]::Navy; Foreground = [System.Windows.Media.Brushes]::LightGray} # Custom Theme
+)
+
+# Track current theme index
+$script:currentThemeIndex = 0
+
+# Function to convert System.Drawing.Color to WPF Brush
+function ConvertTo-Brush {
+    param ($drawingColor)
+    return New-Object System.Windows.Media.SolidColorBrush ([System.Windows.Media.Color]::FromArgb($drawingColor.A, $drawingColor.R, $drawingColor.G, $drawingColor.B))
+}
+
+function Apply-Theme {
+    param ($theme)
+
+    # Apply theme to main window
+    $window.Background = $theme.Background
+
+    # Ensure all specific labels update their text color
+    $treeViewLabel.Foreground = $theme.Foreground
+    $previewPaneLabel.Foreground = $theme.Foreground
+    $detailedInfoPaneLabel.Foreground = $theme.Foreground
+    $filtersLabel.Foreground = $theme.Foreground
+    $recordTypeLabel.Foreground = $theme.Foreground
+    $operationsLabel.Foreground = $theme.Foreground
+    $timeLabel.Foreground = $theme.Foreground
+    $dateRangeLabel.Foreground = $theme.Foreground
+    $filtersLabel.Foreground = $theme.Foreground
+
+    # Apply theme to other UI elements
+    foreach ($control in $window.Content.Children) {
+        if ($control -is [System.Windows.Controls.Control]) {
+            # Set Background color for buttons and panels (not labels)
+            if ($control -isnot [System.Windows.Controls.Label]) {
+                $control.Background = $theme.Background
+            }
+            # Set Text color (Foreground) for Buttons
+            if ($control -is [System.Windows.Controls.Button]) {
+                $control.Foreground = $theme.Foreground
+            }
+        }
+    }
+}
+
 $themeButton.Add_Click({
-        if ($window.Background -eq [System.Windows.Media.Brushes]::White) {
-            $window.Background = [System.Windows.Media.Brushes]::Black
-            $window.Foreground = [System.Windows.Media.Brushes]::White
-        }
-        else {
-            $window.Background = [System.Windows.Media.Brushes]::White
-            $window.Foreground = [System.Windows.Media.Brushes]::Black
-        }
-    })
+    # Cycle through themes
+    $script:currentThemeIndex = ($script:currentThemeIndex + 1) % $themes.Count
+    Apply-Theme -theme $themes[$script:currentThemeIndex]
+})
+
+$customThemeButton.Add_Click({
+    # Open Color Picker for Background
+    $colorDialog = New-Object System.Windows.Forms.ColorDialog
+    if ($colorDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+        $customBackground = ConvertTo-Brush -drawingColor $colorDialog.Color
+    }
+
+    # Open Color Picker for Foreground (Text)
+    if ($colorDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+        $customForeground = ConvertTo-Brush -drawingColor $colorDialog.Color
+    }
+
+    # Apply custom colors
+    if ($customBackground -and $customForeground) {
+        Apply-Theme -theme @{Background = $customBackground; Foreground = $customForeground}
+    }
+})
+
 
 # Add Expand/Collapse Buttons
 $expandButton = New-Object System.Windows.Controls.Button
@@ -797,7 +891,7 @@ $collapseButton.Add_Click({
     })
 
 $clearFiltersButton = New-Object System.Windows.Controls.Button
-$clearFiltersButton.Content = "Clear Filters"
+$clearFiltersButton.Content = "Reset Filters"
 $clearFiltersButton.Width = $buttonWidth
 $clearFiltersButton.Height = $buttonHeight
 $clearFiltersButton.Margin = $uIMargin
@@ -897,6 +991,7 @@ $buttonPanel.Children.Add($collapseButton)
 $buttonPanel.Children.Add($clearFiltersButton)
 $buttonPanel.Children.Add($clearLoadedData)
 $buttonPanel.Children.Add($themeButton)
+$buttonPanel.Children.Add($customThemeButton)
 
 ###################################################
 
@@ -1155,12 +1250,15 @@ function Add-TreeNode {
 }
 
 # Function to Load Audit Log Data with Progress
+
+
 function Load-AuditLogData {
     param ([object]$DataInput)
 
     $progressBar.Value = 0
     Update-StatusBar -Message "Loading data..."
 
+    # Import or assign data dynamically
     if ($DataInput -is [string] -and (Test-Path $DataInput)) {
         $ParsedDataInput = Import-Csv -Path $DataInput
     }
@@ -1176,22 +1274,28 @@ function Load-AuditLogData {
     $totalCount = $ParsedDataInput.Count
     $currentCount = 0
 
+    # Process each record dynamically
     $ParsedDataInput | ForEach-Object {
         $currentCount++
         $progressBar.Value = ($currentCount / $totalCount) * 100
         Update-StatusBar -Message "Loading item $currentCount of $totalCount..."
 
+        # Iterate over all columns dynamically
         $_.PSObject.Properties | ForEach-Object {
-            if ($_.Name -eq "AuditData") {
+            $columnName = $_.Name
+            $columnValue = $_.Value
+
+            # Try parsing any JSON-like column dynamically
+            if ($columnValue -is [string] -and $columnValue.Trim().StartsWith("{")) {
                 try {
-                    $_.Value = ConvertFrom-Json $_.Value -ErrorAction Stop
+                    $_.Value = ConvertFrom-Json $columnValue -ErrorAction Stop
                 }
                 catch {
-                    Write-Warning "Failed to parse AuditData JSON for entry"
-                    $_.Value = $null
+                    Write-Warning "Failed to parse JSON for column: $columnName"
                 }
             }
         }
+
         $logDataArray += $_
     }
 
@@ -1200,6 +1304,8 @@ function Load-AuditLogData {
 
     return $logDataArray
 }
+
+
 
 # Function to update the selected RecordTypes
 function Update-SelectedRecordTypes {
@@ -1364,7 +1470,7 @@ function Update-Filters {
     $operationsFilter.Items.Add($operationsCheckBoxPanel)
 }
 
-# # # Function to Filter TreeView
+# Function to Filter TreeView
 function Update-TreeView {
     # Get selected RecordTypes, excluding "All" if it's checked
     $selectedRecordTypes = $recordTypeCheckBoxPanel.Children | Where-Object { $_.IsChecked -eq $true -and $_.Content -ne "All" } | ForEach-Object { $_.Content }
@@ -1445,38 +1551,52 @@ function Update-TreeView {
             $entryNode.Tag = $logData  # Store the log entry data in the Tag property
             $treeView.Items.Add($entryNode)
 
-            # Add child nodes for AuditData and other properties
             foreach ($key in $logData.PSObject.Properties.Name) {
-                if ($key -eq "AuditData") {
-                    $auditNode = New-Object System.Windows.Controls.TreeViewItem
-                    $auditNode.Header = "AuditData"
-                    $entryNode.Items.Add($auditNode)
-
-                    foreach ($auditKey in $logData.AuditData.PSObject.Properties.Name) {
-                        $auditValue = $logData.AuditData.$auditKey
-
-                        if ($auditKey -eq "Parameters" -and $auditValue -is [System.Collections.IEnumerable]) {
-                            $paramNode = New-Object System.Windows.Controls.TreeViewItem
-                            $paramNode.Header = "Parameters"
-                            $auditNode.Items.Add($paramNode)
-
-                            foreach ($param in $auditValue) {
+                $value = $logData.$key
+            
+                # Check if the value is a JSON string and try converting it
+                if ($value -is [string]) {
+                    try {
+                        $parsedValue = ConvertFrom-Json $value -ErrorAction Stop
+                        $value = $parsedValue
+                    }
+                    catch {
+                        # Write-Warning "Failed to parse JSON for key: $key, using raw value."
+                    }
+                }
+            
+                # If the parsed value is an object, iterate over its properties
+                if ($value -is [PSCustomObject]) {
+                    $node = New-Object System.Windows.Controls.TreeViewItem
+                    $node.Header = $key
+                    $entryNode.Items.Add($node)
+            
+                    foreach ($subKey in $value.PSObject.Properties.Name) {
+                        $subValue = $value.$subKey
+            
+                        # Special handling for collections (e.g., "Parameters")
+                        if ($subValue -is [System.Collections.IEnumerable] -and $subValue -isnot [string]) {
+                            $subNode = New-Object System.Windows.Controls.TreeViewItem
+                            $subNode.Header = $subKey
+                            $node.Items.Add($subNode)
+            
+                            foreach ($item in $subValue) {
                                 try {
-                                    $paramValue = ConvertFrom-Json $param.Value -ErrorAction Stop
+                                    $itemValue = ConvertFrom-Json $item.Value -ErrorAction Stop
                                 }
                                 catch {
-                                    $paramValue = $param.Value
+                                    $itemValue = $item.Value
                                 }
-                                Add-TreeNode -parentNode $paramNode -key $param.Name -value $paramValue
+                                Add-TreeNode -parentNode $subNode -key $item.Name -value $itemValue
                             }
                         }
                         else {
-                            Add-TreeNode -parentNode $auditNode -key $auditKey -value $auditValue
+                            Add-TreeNode -parentNode $node -key $subKey -value $subValue
                         }
                     }
                 }
                 else {
-                    Add-TreeNode -parentNode $entryNode -key $key -value $logData.$key
+                    Add-TreeNode -parentNode $entryNode -key $key -value $value
                 }
             }
         }
