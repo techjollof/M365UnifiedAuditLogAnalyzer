@@ -9,9 +9,6 @@
   - [Unified Audit Log Analyzer (GUI)](#unified-audit-log-analyzer-gui)
   - [Expand-UnifiedAuditLogReport (non-GUI)](#expand-unifiedauditlogreport-non-gui)
 
-
-
-
 ## Unified Audit Log Analyzer (GUI)
 
 The **Unified Audit Log Analyzer** is a powerful PowerShell-based graphical user interface (GUI) tool designed to help administrators analyze and visualize Microsoft 365 (M365) Unified Audit Logs. This tool provides a user-friendly interface for loading, filtering, and exporting audit log data in various formats (CSV, JSON). It supports drag-and-drop functionality, advanced filtering, hierarchical data exploration, and customizable themes.
@@ -87,3 +84,7 @@ You are directly getting auditlog from server
 $Unifiedlogs = Import-csv "ExistingM365UnifiedAuditfile.csv"
 Expand-UnifiedAuditLogReport -AuditLogs $logs -CreateAuditModifiedPropertyReport -ReportPath "C:\Reports\AuditReport.csv"
 ```
+
+
+
+<iframe src="https://github.com/techjollof/M365UnifiedAuditLogAnalyzer/blob/8b51f08a0c2513df81539297986d16395844c935/Help/UnifiedAuditLogAnalyzerGUI.md" width="100%" height="500px"></iframe>
