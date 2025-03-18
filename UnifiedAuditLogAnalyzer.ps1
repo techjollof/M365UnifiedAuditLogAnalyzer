@@ -648,22 +648,62 @@ $grid.Children.Add($buttonPanel)
 [System.Windows.Controls.Grid]::SetColumn($buttonPanel, 2)
 
 # Add Export to JSON Button
+
 $exportJsonButton = New-Object System.Windows.Controls.Button
 $exportJsonButton.Content = "Export to JSON"
 $exportJsonButton.Width = $buttonWidth
 $exportJsonButton.Height = $buttonHeight
 $exportJsonButton.Margin = $uIMargin
 $exportJsonButton.ToolTip = "Export the displayed data to a JSON file."
+
 $exportJsonButton.Add_Click({
+    try {
+        if (-not $script:exportFilteredLogData) {
+            [System.Windows.MessageBox]::Show("No data available for export.", "Error", "OK", "Error") | Out-Null
+            return
+        }
+
         $saveFileDialog = New-Object Microsoft.Win32.SaveFileDialog
         $saveFileDialog.Filter = "JSON Files (*.json)|*.json"
-        if ($saveFileDialog.ShowDialog() -eq $true) {
-            $logDataArray | ConvertTo-Json -Depth 10 | Out-File -FilePath $saveFileDialog.FileName
-            [System.Windows.MessageBox]::Show("Data exported to JSON successfully!") | Out-Null
-        }
-    })
+        $saveFileDialog.Title = "Save JSON File"
+        $saveFileDialog.DefaultExt = "json"
 
-# Add Export to CSV Button
+        if ($saveFileDialog.ShowDialog() -eq $true) {
+            # Convert each log entry's AuditData into structured form only if needed
+            $structuredData = $script:exportFilteredLogData | ForEach-Object {
+                $logEntry = $_ | Select-Object * -ExcludeProperty AuditData
+                
+                # Auto-detect if AuditData is a string (JSON) or already an object
+                if ($_.AuditData -is [string]) {
+                    try {
+                        $parsedAuditData = $_.AuditData | ConvertFrom-Json -ErrorAction Stop
+                    }
+                    catch {
+                        $parsedAuditData = $_.AuditData  # Keep as string if JSON conversion fails
+                    }
+                }
+                else {
+                    $parsedAuditData = $_.AuditData  # Already an object, no conversion needed
+                }
+
+                $logEntry | Add-Member -MemberType NoteProperty -Name "AuditData" -Value $parsedAuditData -Force
+                $logEntry
+            }
+
+            # Convert structured data to JSON and export
+            $structuredData | ConvertTo-Json -Depth 10 | Out-File -FilePath $saveFileDialog.FileName -Encoding utf8
+
+            [System.Windows.MessageBox]::Show("Data exported to JSON successfully!", "Success", "OK", "Information") | Out-Null
+            Update-StatusBar -Message "Data exported to JSON successfully!  Dir: ($saveFileDialog.FileName)"
+        }
+    }
+    catch {
+        [System.Windows.MessageBox]::Show("An error occurred while exporting: $_", "Export Error", "OK", "Error") | Out-Null
+    }
+})
+
+
+#Add Export to CSV Button
 $exportCsvButton = New-Object System.Windows.Controls.Button
 $exportCsvButton.Content = "Export to CSV"
 $exportCsvButton.Width = $buttonWidth
@@ -673,9 +713,12 @@ $exportCsvButton.ToolTip = "Export the displayed data to a CSV file."
 $exportCsvButton.Add_Click({
         $saveFileDialog = New-Object Microsoft.Win32.SaveFileDialog
         $saveFileDialog.Filter = "CSV Files (*.csv)|*.csv"
+
         if ($saveFileDialog.ShowDialog() -eq $true) {
-            $logDataArray | Export-Csv -Path $saveFileDialog.FileName -NoTypeInformation
+            $filteredData = Export-FilteredAuditData -FilteredAuditData $script:exportFilteredLogData
+            $filteredData | Export-Csv -Path $saveFileDialog.FileName -NoTypeInformation
             [System.Windows.MessageBox]::Show("Data exported to CSV successfully!") | Out-Null
+            Update-StatusBar -Message "Data exported to CSV successfully! Dir: ($saveFileDialog.FileName)"
         }
     })
 
@@ -687,92 +730,75 @@ $refreshButton.Height = $buttonHeight
 $refreshButton.Margin = $uIMargin
 $refreshButton.ToolTip = "Refresh reloads the data sets"
 $refreshButton.Add_Click({
-    # Prevent triggering events while updating
-    $isUpdatingCheckBoxes = $true
+        # Prevent triggering events while updating
+        $isUpdatingCheckBoxes = $true
 
-    # Clear all filters
-    $searchBox.Text = ""
-    $recordTypeFilter.SelectedIndex = -1
-    $operationsFilter.SelectedIndex = -1
-    $startDatePicker.SelectedDate = $null
-    $endDatePicker.SelectedDate = $null
-    $startTimeComboBox.Text = "00:00:00"
-    $endTimeComboBox.Text = "23:59:59"
+        # Clear all filters
+        $searchBox.Text = ""
+        $recordTypeFilter.SelectedIndex = -1
+        $operationsFilter.SelectedIndex = -1
+        $startDatePicker.SelectedDate = $null
+        $endDatePicker.SelectedDate = $null
+        $startTimeComboBox.Text = "00:00:00"
+        $endTimeComboBox.Text = "23:59:59"
 
-    # Clear the TreeView
-    $treeView.Items.Clear()
+        # Clear the TreeView
+        $treeView.Items.Clear()
 
-    # Reload the data if a file was previously loaded via drag-and-drop or double-click
-    if ($global:logDataArray) {
-        $global:logDataArray = $global:logDataArray  # Reuse existing data
-    }
-    else {
-        # If no data is loaded, prompt the user to select a file
-        $openFileDialog = New-Object Microsoft.Win32.OpenFileDialog
-        $openFileDialog.Filter = "CSV Files (*.csv)|*.csv|JSON Files (*.json)|*.json"
-        $openFileDialog.Title = "Select a CSV or JSON file to load"
+        # Reload the data if a file was previously loaded via drag-and-drop or double-click
+        if ($global:logDataArray) {
+            $global:logDataArray = $global:logDataArray  # Reuse existing data
+        }
+        else {
+            # If no data is loaded, prompt the user to select a file
+            $openFileDialog = New-Object Microsoft.Win32.OpenFileDialog
+            $openFileDialog.Filter = "CSV Files (*.csv)|*.csv|JSON Files (*.json)|*.json"
+            $openFileDialog.Title = "Select a CSV or JSON file to load"
 
-        if ($openFileDialog.ShowDialog() -eq $true) {
-            $filePath = $openFileDialog.FileName
+            if ($openFileDialog.ShowDialog() -eq $true) {
+                $filePath = $openFileDialog.FileName
 
-            if (Test-ValidFile -FilePath $filePath) {
-                $global:logDataArray = Load-DataFromFile -FilePath $filePath
+                if (Test-ValidFile -FilePath $filePath) {
+                    $global:logDataArray = Load-DataFromFile -FilePath $filePath
+                }
             }
         }
-    }
 
-    if ($null -ne $global:logDataArray) {
-        Update-Filters  # Ensure filters are populated correctly
+        if ($null -ne $global:logDataArray) {
+            Update-Filters  # Ensure filters are populated correctly
 
-        # Ensure "All" is checked for RecordType filter
-        foreach ($checkBox in $recordTypeCheckBoxPanel.Children) {
-            if ($checkBox.Content -eq "All") {
-                $checkBox.IsChecked = $true
-            } else {
-                $checkBox.IsChecked = $false
+            # Ensure "All" is checked for RecordType filter
+            foreach ($checkBox in $recordTypeCheckBoxPanel.Children) {
+                if ($checkBox.Content -eq "All") {
+                    $checkBox.IsChecked = $true
+                }
+                else {
+                    $checkBox.IsChecked = $false
+                }
             }
-        }
-        Update-SelectedRecordTypes  # Ensure UI updates correctly
+            Update-SelectedRecordTypes  # Ensure UI updates correctly
 
-        # Ensure "All" is checked for Operations filter
-        foreach ($checkBox in $operationsCheckBoxPanel.Children) {
-            if ($checkBox.Content -eq "All") {
-                $checkBox.IsChecked = $true
-            } else {
-                $checkBox.IsChecked = $false
+            # Ensure "All" is checked for Operations filter
+            foreach ($checkBox in $operationsCheckBoxPanel.Children) {
+                if ($checkBox.Content -eq "All") {
+                    $checkBox.IsChecked = $true
+                }
+                else {
+                    $checkBox.IsChecked = $false
+                }
             }
+            Update-SelectedOperations  # Ensure UI updates correctly
+
+            Update-TreeView
+            Update-StatusBar -Message "Data refreshed successfully! 'All' selected for RecordType & Operations."
         }
-        Update-SelectedOperations  # Ensure UI updates correctly
+        else {
+            Update-StatusBar -Message "No data loaded."
+        }
 
-        Update-TreeView
-        Update-StatusBar -Message "Data refreshed successfully! 'All' selected for RecordType & Operations."
-    }
-    else {
-        Update-StatusBar -Message "No data loaded."
-    }
-
-    # Re-enable updates
-    $isUpdatingCheckBoxes = $false
-})
-
-
-# # Add Theme Toggle Button
-# $themeButton = New-Object System.Windows.Controls.Button
-# $themeButton.Content = "Toggle Theme"
-# $themeButton.Width = $buttonWidth
-# $themeButton.Height = $buttonHeight
-# $themeButton.ToolTip = "Change UI to dark mode"
-# $themeButton.Margin = $uIMargin
-# $themeButton.Add_Click({
-#         if ($window.Background -eq [System.Windows.Media.Brushes]::White) {
-#             $window.Background = [System.Windows.Media.Brushes]::Black
-#             $window.Foreground = [System.Windows.Media.Brushes]::White
-#         }
-#         else {
-#             $window.Background = [System.Windows.Media.Brushes]::White
-#             $window.Foreground = [System.Windows.Media.Brushes]::Black
-#         }
-#     })
+        # Re-enable updates
+        $isUpdatingCheckBoxes = $false
+    })
 
 
 # Add Theme Toggle Button
@@ -793,10 +819,10 @@ $customThemeButton.Margin = $uIMargin
 
 # Define themes with both Background & Text color
 $themes = @(
-    @{Background = [System.Windows.Media.Brushes]::White; Foreground = [System.Windows.Media.Brushes]::Black},  # Light Mode
-    @{Background = [System.Windows.Media.Brushes]::Black; Foreground = [System.Windows.Media.Brushes]::White},  # Dark Mode
-    @{Background = [System.Windows.Media.Brushes]::Gray; Foreground = [System.Windows.Media.Brushes]::Yellow},  # High Contrast
-    @{Background = [System.Windows.Media.Brushes]::Navy; Foreground = [System.Windows.Media.Brushes]::LightGray} # Custom Theme
+    @{Background = [System.Windows.Media.Brushes]::White; Foreground = [System.Windows.Media.Brushes]::Black }, # Light Mode
+    @{Background = [System.Windows.Media.Brushes]::Black; Foreground = [System.Windows.Media.Brushes]::White }, # Dark Mode
+    @{Background = [System.Windows.Media.Brushes]::Gray; Foreground = [System.Windows.Media.Brushes]::Yellow }, # High Contrast
+    @{Background = [System.Windows.Media.Brushes]::Navy; Foreground = [System.Windows.Media.Brushes]::LightGray } # Custom Theme
 )
 
 # Track current theme index
@@ -841,28 +867,28 @@ function Apply-Theme {
 }
 
 $themeButton.Add_Click({
-    # Cycle through themes
-    $script:currentThemeIndex = ($script:currentThemeIndex + 1) % $themes.Count
-    Apply-Theme -theme $themes[$script:currentThemeIndex]
-})
+        # Cycle through themes
+        $script:currentThemeIndex = ($script:currentThemeIndex + 1) % $themes.Count
+        Apply-Theme -theme $themes[$script:currentThemeIndex]
+    })
 
 $customThemeButton.Add_Click({
-    # Open Color Picker for Background
-    $colorDialog = New-Object System.Windows.Forms.ColorDialog
-    if ($colorDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
-        $customBackground = ConvertTo-Brush -drawingColor $colorDialog.Color
-    }
+        # Open Color Picker for Background
+        $colorDialog = New-Object System.Windows.Forms.ColorDialog
+        if ($colorDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+            $customBackground = ConvertTo-Brush -drawingColor $colorDialog.Color
+        }
 
-    # Open Color Picker for Foreground (Text)
-    if ($colorDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
-        $customForeground = ConvertTo-Brush -drawingColor $colorDialog.Color
-    }
+        # Open Color Picker for Foreground (Text)
+        if ($colorDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+            $customForeground = ConvertTo-Brush -drawingColor $colorDialog.Color
+        }
 
-    # Apply custom colors
-    if ($customBackground -and $customForeground) {
-        Apply-Theme -theme @{Background = $customBackground; Foreground = $customForeground}
-    }
-})
+        # Apply custom colors
+        if ($customBackground -and $customForeground) {
+            Apply-Theme -theme @{Background = $customBackground; Foreground = $customForeground }
+        }
+    })
 
 
 # Add Expand/Collapse Buttons
@@ -896,47 +922,49 @@ $clearFiltersButton.Width = $buttonWidth
 $clearFiltersButton.Height = $buttonHeight
 $clearFiltersButton.Margin = $uIMargin
 $clearFiltersButton.Add_Click({
-    # Prevent triggering events while updating
-    $isUpdatingCheckBoxes = $true
+        # Prevent triggering events while updating
+        $isUpdatingCheckBoxes = $true
 
-    # Clear search box
-    $searchBox.Text = ""
+        # Clear search box
+        $searchBox.Text = ""
 
-    # Reset RecordType (RecipientType) filter
-    foreach ($checkBox in $recordTypeCheckBoxPanel.Children) {
-        if ($checkBox.Content -eq "All") {
-            $checkBox.IsChecked = $true  # Ensure "All" is checked
-        } else {
-            $checkBox.IsChecked = $false  # Uncheck all other options
+        # Reset RecordType (RecipientType) filter
+        foreach ($checkBox in $recordTypeCheckBoxPanel.Children) {
+            if ($checkBox.Content -eq "All") {
+                $checkBox.IsChecked = $true  # Ensure "All" is checked
+            }
+            else {
+                $checkBox.IsChecked = $false  # Uncheck all other options
+            }
         }
-    }
-    Update-SelectedRecordTypes  # Ensure UI updates after resetting
+        Update-SelectedRecordTypes  # Ensure UI updates after resetting
 
-    # Reset Operations filter
-    foreach ($checkBox in $operationsCheckBoxPanel.Children) {
-        if ($checkBox.Content -eq "All") {
-            $checkBox.IsChecked = $true  # Ensure "All" is checked
-        } else {
-            $checkBox.IsChecked = $false  # Uncheck all other options
+        # Reset Operations filter
+        foreach ($checkBox in $operationsCheckBoxPanel.Children) {
+            if ($checkBox.Content -eq "All") {
+                $checkBox.IsChecked = $true  # Ensure "All" is checked
+            }
+            else {
+                $checkBox.IsChecked = $false  # Uncheck all other options
+            }
         }
-    }
-    Update-SelectedOperations  # Ensure UI updates after resetting
+        Update-SelectedOperations  # Ensure UI updates after resetting
 
-    # Reset date and time filters
-    $startDatePicker.SelectedDate = $null
-    $endDatePicker.SelectedDate = $null
-    $startTimeComboBox.Text = "00:00:00"
-    $endTimeComboBox.Text = "23:59:59"
+        # Reset date and time filters
+        $startDatePicker.SelectedDate = $null
+        $endDatePicker.SelectedDate = $null
+        $startTimeComboBox.Text = "00:00:00"
+        $endTimeComboBox.Text = "23:59:59"
 
-    # Update the TreeView
-    Update-TreeView
+        # Update the TreeView
+        Update-TreeView
 
-    # Re-enable event handlers
-    $isUpdatingCheckBoxes = $false
+        # Re-enable event handlers
+        $isUpdatingCheckBoxes = $false
 
-    # Update the status bar
-    Update-StatusBar -Message "Filters cleared. 'All' is selected for both RecordType and Operations."
-})
+        # Update the status bar
+        Update-StatusBar -Message "Filters cleared. 'All' is selected for both RecordType and Operations."
+    })
 
 
 
@@ -948,38 +976,38 @@ $clearLoadedData.Height = $buttonHeight
 $clearLoadedData.Margin = $uIMargin
 $clearLoadedData.ToolTip = "Clear all loaded data and reset the UI"
 $clearLoadedData.Add_Click({
-    # Prevent triggering events while updating
-    $isUpdatingCheckBoxes = $true
+        # Prevent triggering events while updating
+        $isUpdatingCheckBoxes = $true
 
-    # Clear search box
-    $searchBox.Text = ""
+        # Clear search box
+        $searchBox.Text = ""
 
-    # Fully remove all RecordType (RecipientType) filter options
-    $recordTypeCheckBoxPanel.Children.Clear()
-    Update-SelectedRecordTypes  # Ensure UI updates correctly
+        # Fully remove all RecordType (RecipientType) filter options
+        $recordTypeCheckBoxPanel.Children.Clear()
+        Update-SelectedRecordTypes  # Ensure UI updates correctly
 
-    # Fully remove all Operations filter options
-    $operationsCheckBoxPanel.Children.Clear()
-    Update-SelectedOperations  # Ensure UI updates correctly
+        # Fully remove all Operations filter options
+        $operationsCheckBoxPanel.Children.Clear()
+        Update-SelectedOperations  # Ensure UI updates correctly
 
-    # Reset date and time filters
-    $startDatePicker.SelectedDate = $null
-    $endDatePicker.SelectedDate = $null
-    $startTimeComboBox.Text = "00:00:00"
-    $endTimeComboBox.Text = "23:59:59"
+        # Reset date and time filters
+        $startDatePicker.SelectedDate = $null
+        $endDatePicker.SelectedDate = $null
+        $startTimeComboBox.Text = "00:00:00"
+        $endTimeComboBox.Text = "23:59:59"
 
-    # Fully clear the TreeView
-    $treeView.Items.Clear()
+        # Fully clear the TreeView
+        $treeView.Items.Clear()
 
-    # Fully reset global data
-    $global:logDataArray = @()  # Empty array instead of $null for stability
+        # Fully reset global data
+        $global:logDataArray = @()  # Empty array instead of $null for stability
 
-    # Update the status bar
-    Update-StatusBar -Message "All data cleared. No RecordType or Operations entries remain."
+        # Update the status bar
+        Update-StatusBar -Message "All data cleared. No RecordType or Operations entries remain."
 
-    # Re-enable updates
-    $isUpdatingCheckBoxes = $false
-})
+        # Re-enable updates
+        $isUpdatingCheckBoxes = $false
+    })
 
 
 # Add buttons to the button panel
@@ -1038,6 +1066,81 @@ $progressBar.Visibility = "Visible"  # Visible by default
 # Add the ProgressBar to the last column of the status bar grid
 $statusBarGrid.Children.Add($progressBar)
 [System.Windows.Controls.Grid]::SetColumn($progressBar, 2)
+
+
+
+
+Function Export-FilteredAuditData {
+
+    param(
+        [Parameter(Mandatory = $true)]
+        [PSCustomObject]$FilteredAuditData,
+    
+        [string]$Prefix = ""
+    )
+
+    $ProcessedLogs = @()
+
+    function Expand-UnifiedAuditData {
+
+        param(
+            [Parameter(Mandatory = $true)]
+            [PSCustomObject]$Data,
+        
+            [string]$Prefix = ""
+        )
+    
+        $Expanded = @()
+        foreach ($Property in $Data.PSObject.Properties) {
+            $Name = if ($Prefix) { "$Prefix.$($Property.Name)" } else { $Property.Name }
+        
+            if ($Property.Value -is [PSCustomObject]) {
+                $Expanded += Expand-UnifiedAuditData -Data $Property.Value -Prefix $Name
+            }
+            elseif ($Property.Value -is [System.Array]) {
+                for ($i = 0; $i -lt $Property.Value.Count; $i++) {
+                    $Expanded += Expand-UnifiedAuditData -Data $Property.Value[$i] -Prefix "$Name[$i]"
+                }
+            }
+            else {
+                $Expanded += [PSCustomObject]@{
+                    Name  = $Name
+                    Value = $Property.Value
+                }
+            }
+        }
+        return $Expanded
+    }
+
+    
+    foreach ($Log in $FilteredAuditData) {
+        try {
+            $AuditData = $Log.AuditData | ConvertFrom-Json -ErrorAction Stop
+            $ExpandedData = Expand-UnifiedAuditData -Data $AuditData
+    
+            $FlattenedLog = [PSCustomObject]@{
+                RecordType   = $Log.RecordType
+                CreationDate = $Log.CreationDate
+                UserIds      = $Log.UserIds
+                Operations   = $Log.Operations
+            }
+    
+            foreach ($Item in $ExpandedData) {
+                Add-Member -InputObject $FlattenedLog -MemberType NoteProperty -Name $Item.Name -Value $Item.Value -Force
+            }
+    
+            $ProcessedLogs += $FlattenedLog
+        }
+        catch {
+            Write-Warning "Failed to process log entry: $_"
+        }
+    }
+
+    return  $ProcessedLogs
+    
+}
+
+
 
 # Example: Update status bar with a message and progress
 function Update-StatusBar {
@@ -1348,25 +1451,25 @@ function Update-Filters {
     $script:allRecordTypeCheckBox.IsChecked = $true  # Default to checked
 
     $script:allRecordTypeCheckBox.Add_Checked({
-        if (-not $script:isUpdatingCheckBoxes) {
-            $script:isUpdatingCheckBoxes = $true
-            foreach ($checkBox in $recordTypeCheckBoxPanel.Children) {
-                if ($checkBox -ne $script:allRecordTypeCheckBox) {
-                    $checkBox.IsChecked = $false
+            if (-not $script:isUpdatingCheckBoxes) {
+                $script:isUpdatingCheckBoxes = $true
+                foreach ($checkBox in $recordTypeCheckBoxPanel.Children) {
+                    if ($checkBox -ne $script:allRecordTypeCheckBox) {
+                        $checkBox.IsChecked = $false
+                    }
                 }
+                Update-SelectedRecordTypes
+                $script:isUpdatingCheckBoxes = $false
             }
-            Update-SelectedRecordTypes
-            $script:isUpdatingCheckBoxes = $false
-        }
-    })
+        })
 
     $script:allRecordTypeCheckBox.Add_Unchecked({
-        if (-not $script:isUpdatingCheckBoxes) {
-            $script:isUpdatingCheckBoxes = $true
-            Update-SelectedRecordTypes
-            $script:isUpdatingCheckBoxes = $false
-        }
-    })
+            if (-not $script:isUpdatingCheckBoxes) {
+                $script:isUpdatingCheckBoxes = $true
+                Update-SelectedRecordTypes
+                $script:isUpdatingCheckBoxes = $false
+            }
+        })
 
     # Add the "All" CheckBox for RecordType to the StackPanel
     $recordTypeCheckBoxPanel.Children.Add($script:allRecordTypeCheckBox)
@@ -1381,24 +1484,24 @@ function Update-Filters {
         $checkBox.Margin = "2"
 
         $checkBox.Add_Checked({
-            if (-not $script:isUpdatingCheckBoxes) {
-                $script:isUpdatingCheckBoxes = $true
-                $script:allRecordTypeCheckBox.IsChecked = $false  # Ensure "All" is unchecked
-                Update-SelectedRecordTypes
-                $script:isUpdatingCheckBoxes = $false
-            }
-        })
+                if (-not $script:isUpdatingCheckBoxes) {
+                    $script:isUpdatingCheckBoxes = $true
+                    $script:allRecordTypeCheckBox.IsChecked = $false  # Ensure "All" is unchecked
+                    Update-SelectedRecordTypes
+                    $script:isUpdatingCheckBoxes = $false
+                }
+            })
 
         $checkBox.Add_Unchecked({
-            if (-not $script:isUpdatingCheckBoxes) {
-                $script:isUpdatingCheckBoxes = $true
-                if (-not ($recordTypeCheckBoxPanel.Children | Where-Object { $_.IsChecked -eq $true -and $_.Content -ne "All" })) {
-                    $script:allRecordTypeCheckBox.IsChecked = $true  # Recheck "All" if no others are checked
+                if (-not $script:isUpdatingCheckBoxes) {
+                    $script:isUpdatingCheckBoxes = $true
+                    if (-not ($recordTypeCheckBoxPanel.Children | Where-Object { $_.IsChecked -eq $true -and $_.Content -ne "All" })) {
+                        $script:allRecordTypeCheckBox.IsChecked = $true  # Recheck "All" if no others are checked
+                    }
+                    Update-SelectedRecordTypes
+                    $script:isUpdatingCheckBoxes = $false
                 }
-                Update-SelectedRecordTypes
-                $script:isUpdatingCheckBoxes = $false
-            }
-        })
+            })
 
         $recordTypeCheckBoxPanel.Children.Add($checkBox)
     }
@@ -1412,25 +1515,25 @@ function Update-Filters {
     $script:allOperationsCheckBox.IsChecked = $true  # Default to checked
 
     $script:allOperationsCheckBox.Add_Checked({
-        if (-not $script:isUpdatingCheckBoxes) {
-            $script:isUpdatingCheckBoxes = $true
-            foreach ($checkBox in $operationsCheckBoxPanel.Children) {
-                if ($checkBox -ne $script:allOperationsCheckBox) {
-                    $checkBox.IsChecked = $false
+            if (-not $script:isUpdatingCheckBoxes) {
+                $script:isUpdatingCheckBoxes = $true
+                foreach ($checkBox in $operationsCheckBoxPanel.Children) {
+                    if ($checkBox -ne $script:allOperationsCheckBox) {
+                        $checkBox.IsChecked = $false
+                    }
                 }
+                Update-SelectedOperations
+                $script:isUpdatingCheckBoxes = $false
             }
-            Update-SelectedOperations
-            $script:isUpdatingCheckBoxes = $false
-        }
-    })
+        })
 
     $script:allOperationsCheckBox.Add_Unchecked({
-        if (-not $script:isUpdatingCheckBoxes) {
-            $script:isUpdatingCheckBoxes = $true
-            Update-SelectedOperations
-            $script:isUpdatingCheckBoxes = $false
-        }
-    })
+            if (-not $script:isUpdatingCheckBoxes) {
+                $script:isUpdatingCheckBoxes = $true
+                Update-SelectedOperations
+                $script:isUpdatingCheckBoxes = $false
+            }
+        })
 
     # Add the "All" CheckBox for Operations to the StackPanel
     $operationsCheckBoxPanel.Children.Add($script:allOperationsCheckBox)
@@ -1445,24 +1548,24 @@ function Update-Filters {
         $checkBox.Margin = "2"
 
         $checkBox.Add_Checked({
-            if (-not $script:isUpdatingCheckBoxes) {
-                $script:isUpdatingCheckBoxes = $true
-                $script:allOperationsCheckBox.IsChecked = $false  # Ensure "All" is unchecked
-                Update-SelectedOperations
-                $script:isUpdatingCheckBoxes = $false
-            }
-        })
+                if (-not $script:isUpdatingCheckBoxes) {
+                    $script:isUpdatingCheckBoxes = $true
+                    $script:allOperationsCheckBox.IsChecked = $false  # Ensure "All" is unchecked
+                    Update-SelectedOperations
+                    $script:isUpdatingCheckBoxes = $false
+                }
+            })
 
         $checkBox.Add_Unchecked({
-            if (-not $script:isUpdatingCheckBoxes) {
-                $script:isUpdatingCheckBoxes = $true
-                if (-not ($operationsCheckBoxPanel.Children | Where-Object { $_.IsChecked -eq $true -and $_.Content -ne "All" })) {
-                    $script:allOperationsCheckBox.IsChecked = $true  # Recheck "All" if no others are checked
+                if (-not $script:isUpdatingCheckBoxes) {
+                    $script:isUpdatingCheckBoxes = $true
+                    if (-not ($operationsCheckBoxPanel.Children | Where-Object { $_.IsChecked -eq $true -and $_.Content -ne "All" })) {
+                        $script:allOperationsCheckBox.IsChecked = $true  # Recheck "All" if no others are checked
+                    }
+                    Update-SelectedOperations
+                    $script:isUpdatingCheckBoxes = $false
                 }
-                Update-SelectedOperations
-                $script:isUpdatingCheckBoxes = $false
-            }
-        })
+            })
 
         $operationsCheckBoxPanel.Children.Add($checkBox)
     }
@@ -1486,6 +1589,8 @@ function Update-TreeView {
     $startTime = $startTimeComboBox.Text
     $endDate = $endDatePicker.SelectedDate
     $endTime = $endTimeComboBox.Text
+
+    $script:exportFilteredLogData = @()
 
     # Parse start and end DateTime
     $startDateTime = $null
@@ -1546,6 +1651,9 @@ function Update-TreeView {
 
         # If all filters match, add the log entry to the TreeView
         if ($matchesRecordType -and $matchesOperation -and $matchesSearch -and $matchesDateRange) {
+
+            $script:exportFilteredLogData += $logData
+
             $entryNode = New-Object System.Windows.Controls.TreeViewItem
             $entryNode.Header = "$($logData.RecordType) - $($logData.Operations)"
             $entryNode.Tag = $logData  # Store the log entry data in the Tag property
@@ -1561,7 +1669,7 @@ function Update-TreeView {
                         $value = $parsedValue
                     }
                     catch {
-                        # Write-Warning "Failed to parse JSON for key: $key, using raw value."
+                        # continue
                     }
                 }
             

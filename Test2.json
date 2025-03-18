@@ -1,0 +1,98 @@
+[
+  {
+    "RecordType": "ExchangeAdmin",
+    "CreationDate": "3/10/2025 10:33:44 PM",
+    "UserIds": "NT AUTHORITY\\SYSTEM (Microsoft.Exchange.ServiceHost)",
+    "Operations": "New-ExchangeAssistanceConfig",
+    "ResultIndex": "299",
+    "ResultCount": "1121",
+    "Identity": "f2e4aa38-2951-4720-c0be-08dd60239df0",
+    "IsValid": "True",
+    "ObjectState": "Unchanged",
+    "AuditData": {
+      "AppAccessContext": {},
+      "CreationTime": "2025-03-10T22:33:44",
+      "Id": "f2e4aa38-2951-4720-c0be-08dd60239df0",
+      "Operation": "New-ExchangeAssistanceConfig",
+      "OrganizationId": "70e7f470-ed25-47f5-aa2f-096f0f44c831",
+      "RecordType": 1,
+      "ResultStatus": "True",
+      "UserKey": "NT AUTHORITY\\SYSTEM (Microsoft.Exchange.ServiceHost)",
+      "UserType": 3,
+      "Version": 1,
+      "Workload": "Exchange",
+      "ObjectId": "M365x44824121.onmicrosoft.com\\ExchangeAssistance",
+      "UserId": "NT AUTHORITY\\SYSTEM (Microsoft.Exchange.ServiceHost)",
+      "AppId": "",
+      "AppPoolName": "MSExchangeServiceHost",
+      "ClientAppId": "",
+      "CorrelationID": "",
+      "ExternalAccess": true,
+      "OrganizationName": "M365x44824121.onmicrosoft.com",
+      "OriginatingServer": "DS7P223MB0504 (15.20.8511.025)",
+      "Parameters": [
+        {
+          "Name": "DomainController",
+          "Value": ""
+        },
+        {
+          "Name": "Organization",
+          "Value": "M365x44824121.onmicrosoft.com"
+        },
+        {
+          "Name": "IgnoreDehydratedFlag",
+          "Value": "True"
+        }
+      ],
+      "RequestId": "6ba0c1b6-283f-475a-8ff1-aca932b8ecee"
+    }
+  },
+  {
+    "RecordType": "ExchangeAdmin",
+    "CreationDate": "3/9/2025 11:36:38 PM",
+    "UserIds": "NT AUTHORITY\\SYSTEM (Microsoft.Exchange.ServiceHost)",
+    "Operations": "New-ExchangeAssistanceConfig",
+    "ResultIndex": "417",
+    "ResultCount": "1121",
+    "Identity": "ccbfbf4e-eecc-456c-f91a-08dd5f633ce7",
+    "IsValid": "True",
+    "ObjectState": "Unchanged",
+    "AuditData": {
+      "AppAccessContext": {},
+      "CreationTime": "2025-03-09T23:36:38",
+      "Id": "ccbfbf4e-eecc-456c-f91a-08dd5f633ce7",
+      "Operation": "New-ExchangeAssistanceConfig",
+      "OrganizationId": "70e7f470-ed25-47f5-aa2f-096f0f44c831",
+      "RecordType": 1,
+      "ResultStatus": "True",
+      "UserKey": "NT AUTHORITY\\SYSTEM (Microsoft.Exchange.ServiceHost)",
+      "UserType": 3,
+      "Version": 1,
+      "Workload": "Exchange",
+      "ObjectId": "M365x44824121.onmicrosoft.com\\ExchangeAssistance",
+      "UserId": "NT AUTHORITY\\SYSTEM (Microsoft.Exchange.ServiceHost)",
+      "AppId": "",
+      "AppPoolName": "MSExchangeServiceHost",
+      "ClientAppId": "",
+      "CorrelationID": "",
+      "ExternalAccess": true,
+      "OrganizationName": "M365x44824121.onmicrosoft.com",
+      "OriginatingServer": "SJ1P223MB0507 (15.20.8511.025)",
+      "Parameters": [
+        {
+          "Name": "DomainController",
+          "Value": ""
+        },
+        {
+          "Name": "Organization",
+          "Value": "M365x44824121.onmicrosoft.com"
+        },
+        {
+          "Name": "IgnoreDehydratedFlag",
+          "Value": "True"
+        }
+      ],
+      "RequestId": "9aa891c3-d2eb-42da-8b4a-0e5649510d38"
+    }
+  }
+]
