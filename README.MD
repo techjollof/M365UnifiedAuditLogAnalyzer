@@ -1,90 +1,133 @@
-
 # Unified Audit Log Analyzer
 
-
-## Table of Contents
-
+### Table of Contents
 
 - [Unified Audit Log Analyzer](#unified-audit-log-analyzer)
+  
   - [Unified Audit Log Analyzer (GUI)](#unified-audit-log-analyzer-gui)
-  - [Expand-UnifiedAuditLogReport (non-GUI)](#expand-unifiedauditlogreport-non-gui)
+  
+  - [Expand-UnifiedAuditLogReport (Non-GUI)](#expand-unifiedauditlogreport-non-gui)
 
-## Unified Audit Log Analyzer (GUI)
+### Unified Audit Log Analyzer (GUI) - Advanced Unified Audit Log Analyzer
 
-The **Unified Audit Log Analyzer** is a powerful PowerShell-based graphical user interface (GUI) tool designed to help administrators analyze and visualize Microsoft 365 (M365) Unified Audit Logs. This tool provides a user-friendly interface for loading, filtering, and exporting audit log data in various formats (CSV, JSON). It supports drag-and-drop functionality, advanced filtering, hierarchical data exploration, and customizable themes.
+The **Unified Audit Log Analyzer** is a powerful PowerShell-based graphical user interface (GUI) tool designed to help administrators analyze and visualize Microsoft 365 (M365) Unified Audit Logs. This tool provides a user-friendly interface for loading, filtering, and exporting audit log data in various formats (CSV, JSON). 
 
-## **Run the Script**:
+#### Key features include:
 
-- Open PowerShell and navigate to the directory containing the script. There are two ways of run the program/script
+- Drag-and-drop functionality
+- Advanced filtering capabilities
+- Hierarchical data exploration
+- Customizable themes
 
-- Run the script using the following command without parameter
+### Notes and Requirements
 
-    ```powershell
-    .\UnifiedAuditLogAnalyzer.ps1
-    ```
+1. **PowerShell**: Ensure PowerShell 5.1 or later is installed.
+2. **WPF Assemblies**: The script uses Windows Presentation Foundation (WPF) for the GUI, which is included in .NET Framework.
+3. **Permissions**: Ensure the account running the script has the necessary permissions to access the audit log data.
 
-- Example command to load data via `InputData` parameter:
+### **Running the Script**
 
-    - The parametric version can take full file path `"C:\AuditLogs\logdata.csv"` 
+To run the script, follow these steps:
 
-        ```powershell
-        .\UnifiedAuditLogAnalyzer.ps1 -InputData "C:\AuditLogs\logdata.csv"
-        ```
+1. Open PowerShell and navigate to the directory containing the script.
+2. There are two ways to execute the script:
 
-    - The parametric version can take full file path `"C:\AuditLogs\logdata.csv"`
+#### Run the script without parameters:
 
-        ```powershell
-        $log = Import-csv  "C:\AuditLogs\logdata.csv"
-        .\UnifiedAuditLogAnalyzer.ps1 -InputData $log
-        ```
+```powershell
+.\UnifiedAuditLogAnalyzer.ps1
+```
+
+#### Run the script with the `InputData` parameter:
+
+- Using a file path:
+  
+```powershell
+.\UnifiedAuditLogAnalyzer.ps1 -InputData "C:\AuditLogs\logdata.csv"
+```
+
+- Using an imported CSV file:
+
+```powershell
+$log = Import-Csv "C:\AuditLogs\logdata.csv"
+.\UnifiedAuditLogAnalyzer.ps1 -InputData $log
+```
+
+- Getting from server using Search-Unified command
+
+```powershell
+$log = search-UnifiedAuditLog -EndDate 3/3/2025 -StartDate 1/3/2025 -ResultSize 100
+.\UnifiedAuditLogAnalyzer.ps1 -InputData $log
+```
+
+#### Analyzer UI
+
+![UI](./images/loadeddata.png)
+
+#### For More Information
+
+Refer to the detailed documentation:  [Advanced Unified Audit Log Analyzer](/Help/UnifiedAuditLogAnalyzerGUI.md)
 
 ---
 
-## Expand-UnifiedAuditLogReport (non-GUI)
+## Expand-UnifiedAuditLogReport (Non-GUI) - Simplified Unified Audit Log Expander
 
-`Expand-UnifiedAuditLogReport` is a PowerShell script designed to process and analyze audit logs from Microsoft 365 Unified Audit Log data. The script can handle audit logs in two ways: This script was developed to streamline audit log analysis and reporting within Microsoft 365 environments.
+`Expand-UnifiedAuditLogReport` is a PowerShell script designed to process and analyze audit logs from Microsoft 365 Unified Audit Log data. It provides two ways to handle audit logs:
 
-1. **Using locally provided audit logs**
+1. **Using locally stored audit logs**
+2. **Retrieving audit data directly from Microsoft 365**
 
-2. **Retrieving audit data directly from a source**
+This script expands JSON-based audit log entries, extracts key parameters, and generates detailed reports for better analysis.
 
-The script expands JSON-based audit log entries, extracts key parameters, and generates detailed reports.
+### Notes and Requirements
 
-## Features
+- Ensure you have the necessary permissions to retrieve Microsoft 365 audit logs.
 
-- Supports processing of audit logs from local data files or direct retrieval from Microsoft 365.
+- If using direct retrieval, ensure you are connected to Exchange Online by running `Connect-ExchangeOnline`.
 
-- Converts JSON-based audit log data into an easily readable format.
+- The script checks for missing prerequisites and provides guidance if Exchange Online Management is not installed.
 
-- Extracts and structures detailed parameter information.
+#### Key features include:
 
-- Generates CSV reports for audit logs and modified property reports.
-
-- Supports filtering based on audit record types, operations, date ranges, and free text searches.
-
+- Supports processing audit logs from local files or direct retrieval from Microsoft 365.
+- Converts JSON-based audit log data into a structured, readable format.
+- Extracts and organizes key parameter information.
+- Generates CSV reports for audit logs and modified properties.
+- Supports filtering by audit record types, operations, date ranges, and free-text searches.
 - Provides an option to prioritize completeness over performance.
+- Enables session-based data retrieval to handle large datasets efficiently.
 
-- Enables session-based data retrieval for handling large datasets.
+### Examples
 
-
-## Examples
-
-### Example 1: Using Local Data
+#### Example 1: Retrieving Audit Logs Directly from Microsoft 365
 
 ```powershell
-$Unifiedlogs = Search-UnifiedAuditLog -EndDate 3/15/2025 -StartDate 3/1/2025 -ResultSize 500 -RecordType ExchangeAdmin
-Expand-UnifiedAuditLogReport -AuditLogs $Unifiedlogs -CreateAuditModifiedPropertyReport -ReportPath "C:\Reports\AuditReport.csv"
+$UnifiedLogs = Search-UnifiedAuditLog -EndDate 3/15/2025 -StartDate 3/1/2025 -ResultSize 500 -RecordType ExchangeAdmin
+Expand-UnifiedAuditLogReport -AuditLogs $UnifiedLogs -CreateAuditModifiedPropertyReport -ReportPath "C:\Reports\AuditReport.csv"
 ```
 
-You are directly getting auditlog from server
-
-### Example 2: Using Local Data
+#### Example 2: Using Locally Stored Audit Logs
 
 ```powershell
-$Unifiedlogs = Import-csv "ExistingM365UnifiedAuditfile.csv"
-Expand-UnifiedAuditLogReport -AuditLogs $logs -CreateAuditModifiedPropertyReport -ReportPath "C:\Reports\AuditReport.csv"
+$UnifiedLogs = Import-Csv "ExistingM365UnifiedAuditfile.csv"
+Expand-UnifiedAuditLogReport -AuditLogs $UnifiedLogs -CreateAuditModifiedPropertyReport -ReportPath "C:\Reports\AuditReport.csv"
 ```
 
+#### For More Information
+
+Refer to the detailed documentation:  [Simplified Unified Audit Log Expander](/Help/Expand-UnifiedAuditLogReport.md)
 
 
-<iframe src="https://github.com/techjollof/M365UnifiedAuditLogAnalyzer/blob/8b51f08a0c2513df81539297986d16395844c935/Help/UnifiedAuditLogAnalyzerGUI.md" width="100%" height="500px"></iframe>
+---
+
+## License
+
+This script is provided under the [MIT License](./License.md). 
+
+
+## Contact
+
+For additional support or feature requests
+
+- please open an issue on the [GitHub repository](https://github.com/techjollof/M365UnifiedAuditLogAnalyzer).
+- You can also reach me via techjollof@gmail.com. Follow me on [linkedIn](https://www.linkedin.com/in/ndtetteh/) 
