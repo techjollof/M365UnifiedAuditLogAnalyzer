@@ -1,18 +1,16 @@
 # Unified Audit Log Analyzer
 
-### Table of Contents
+## Table of Contents
 
 - [Unified Audit Log Analyzer](#unified-audit-log-analyzer)
-  
   - [Unified Audit Log Analyzer (GUI)](#unified-audit-log-analyzer-gui)
-  
   - [Expand-UnifiedAuditLogReport (Non-GUI)](#expand-unifiedauditlogreport-non-gui)
 
-### Unified Audit Log Analyzer (GUI) - Advanced Unified Audit Log Analyzer
+## Unified Audit Log Analyzer (GUI) - Advanced Unified Audit Log Analyzer
 
 The **Unified Audit Log Analyzer** is a powerful PowerShell-based graphical user interface (GUI) tool designed to help administrators analyze and visualize Microsoft 365 (M365) Unified Audit Logs. This tool provides a user-friendly interface for loading, filtering, and exporting audit log data in various formats (CSV, JSON). 
 
-#### Key features include:
+### Key features include:
 
 - Drag-and-drop functionality
 - Advanced filtering capabilities
@@ -60,11 +58,11 @@ $log = search-UnifiedAuditLog -EndDate 3/3/2025 -StartDate 1/3/2025 -ResultSize 
 .\UnifiedAuditLogAnalyzer.ps1 -InputData $log
 ```
 
-#### Analyzer UI
+### Analyzer UI
 
 ![UI](./images/loadeddata.png)
 
-#### For More Information
+### For More Information
 
 Refer to the detailed documentation:  [Advanced Unified Audit Log Analyzer](/Help/UnifiedAuditLogAnalyzerGUI.md)
 
