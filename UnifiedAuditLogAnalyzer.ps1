@@ -984,19 +984,23 @@ $grid.Children.Add($borderContainer) | out-null
 [System.Windows.Controls.Grid]::SetColumnSpan($borderContainer, 3)  # Span across all columns
 
 # Create the status text block with improved design
-$statusBarText = New-Object System.Windows.Controls.TextBlock
+$statusBarText = New-Object System.Windows.Controls.TextBox
 $statusBarText.Margin = $uIMargin
 $statusBarText.Text = "Unified log analyzer application started successfully."
 $statusBarText.VerticalAlignment = "Center"
 $statusBarText.HorizontalAlignment = "Left"
 $statusBarText.FontSize = "14"
 $statusBarText.FontWeight = "Bold"
-$statusBarText.Foreground = [System.Windows.Media.Brushes]::DarkSlateGray
 $statusBarText.Padding = "5,0,0,0"
+$statusBarText.IsReadOnly = $true
+$statusBarText.Background = [System.Windows.Media.Brushes]::Transparent  # Remove background color
+$statusBarText.BorderBrush = [System.Windows.Media.Brushes]::Transparent  # Remove outline color
+$statusBarText.BorderThickness = 0  # Remove outline thickness
+
 
 $statusBarGrid.Children.Add($statusBarText) | out-null
 [System.Windows.Controls.Grid]::SetRow($statusBarText, 2)
-[System.Windows.Controls.Grid]::SetColumn($statusBarText, 1)
+[System.Windows.Controls.Grid]::SetColumn($statusBarText, 0)
 
 # Create a ProgressBar for loading/processing status with better styling
 $progressBar = New-Object System.Windows.Controls.ProgressBar
