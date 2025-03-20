@@ -20,7 +20,7 @@
   - Add a preview pane to show a summary of the selected log entry without expanding it in the TreeView
 - :white_check_mark: **Copy Previewed Log**
   - Support copying of content in the preview pane and paste in other applications
-- :pushpin: **Keyboard Shortcuts**
+- :dart: **Keyboard Shortcuts**
   - Implement keyboard shortcuts for common actions (e.g., `Ctrl+F` for search, `Ctrl+E` for export)
 - :pushpin: **Multi-Language Support**
   - Add support for multiple languages for UI
@@ -28,7 +28,7 @@
   - Allow users to execute Search-UnifiedAudit command directly from the UI and date be process and passed to the Audit data session for advanced processing
 - :white_check_mark: **Drag-and-Drop Support**
   - Allow users to drag and drop CSV or JSON files into the application for quick loading
-- :pushpin: **Search History**
+- :dart: **Search and Imported Data History**
   - Maintain a history of search terms and allow users to quickly reuse them
 - :white_check_mark: **Custom Themes**
   - Allow users to create and apply custom themes (e.g., custom colors)
@@ -47,3 +47,12 @@
   - Enable multiple log entry selection in the data view section
 - :white_check_mark: **Export Filtered log entry**
   - Ability to the filtered data content as JSON or CSV
+
+- :pushpin: **Allow multiple select**
+  - Allow multiple select in the "Audit Data" panel and expect only the selected
+- :pushpin:**Implement additional visualization** 
+  - Implement additional visualization options for audit log data.
+- :pushpin:**Improve performance**
+  - Improve performance for handling large datasets
+- :pushpin:**Add Email feature**
+  - Add Email feature to automatically package the select logs and email to some else.
