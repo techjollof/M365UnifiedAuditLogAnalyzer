@@ -24,7 +24,7 @@
   - Implement keyboard shortcuts for common actions (e.g., `Ctrl+F` for search, `Ctrl+E` for export)
 - :pushpin: **Multi-Language Support**
   - Add support for multiple languages for UI
-- :pushpin: **Direct log query from Server**
+- :white_check_mark: **Direct log query from Server**
   - Allow users to execute Search-UnifiedAudit command directly from the UI and date be process and passed to the Audit data session for advanced processing
 - :white_check_mark: **Drag-and-Drop Support**
   - Allow users to drag and drop CSV or JSON files into the application for quick loading
