@@ -2197,5 +2197,5 @@ if ($PSBoundParameters.ContainsKey('InputData')) {
 }
 
 # Show Window
-$window.child
-$window.ShowDialog()
+$window.child |Out-Null
+$window.ShowDialog() | Out-Null

@@ -1,4 +1,4 @@
-# Unified Audit Log Analyzer
+# Unified Audit Log Analyzer (GUI)
 
 ## Overview
 
@@ -52,6 +52,63 @@ The **Unified Audit Log Analyzer** is a powerful PowerShell-based graphical user
 ### ✅ Export Selected Log Entry
 
 - **Multiple Log Entry Selection**: Enable multiple log entry selection in the data view section for bulk export.
+
+---
+
+## New Features
+
+### 1. **M365 Audit Query - Online Panel**
+
+- **Description**:
+  - A new **Online Panel** has been added to enable direct unified audit log searches and analysis within the tool.
+  - The start and end date/time are automatically retrieved from the filter panel.
+  - All parameters from the `Search-UnifiedAuditLog` PowerShell cmdlet (as documented in the [Microsoft documentation](https://learn.microsoft.com/en-us/powershell/module/exchange/search-unifiedauditlog?view=exchange-ps)) have been integrated into the panel.
+  - This feature allows users to retrieve and analyze M365 audit logs directly without needing to use the Microsoft 365 portal.
+
+   ![OnlineAuditPanel](../images/AuditDataPanel.png){width=80%}
+- **Benefits**:
+  - Fine-tune your audit log searches with advanced parameters.
+  - Streamline the process of retrieving and analyzing logs in one place.
+
+### 2. **Online Data Toggle**
+
+- **Description**:
+  - A new toggle has been added to enable or disable the **Online Data Retrieval Panel**.
+  - If Exchange Online is connected, the panel will open automatically.
+  - If Exchange Online is not connected, the panel will remain hidden.
+
+- **Benefits**:
+  - Provides flexibility to hide the online panel when not needed.
+  - Improves usability by automatically adapting to the connection status.
+
+### 3. **Connect/Disconnect EXO**
+
+- **Description**:
+  - Added functionality to **Connect** or **Disconnect** from Exchange Online directly within the tool.
+  - After connecting to Exchange Online, the **Online Panel** will open automatically.
+
+- **Benefits**:
+  - Simplifies the process of managing Exchange Online connections.
+  - Enhances user experience by automating panel visibility based on connection status.
+
+### 4. **Toggle Theme and Custom Theme**
+
+- **Description**:
+  - The **Theme Toggle** feature has been updated to include **10 pre-built themes**.
+  
+    | Light Mode           | Dark Mode           |
+    |-----------------------|---------------------|
+    | High Contrast         | Custom Navy Theme   |
+    | Solarized Light       | Solarized Dark      |
+    | Monokai               | Dracula             |
+    | One Dark              | Gruvbox Light       |
+  
+  - Updated the **Custom Theme** option, allowing users to select their preferred colors for the interface.
+  - Theme changes now apply to all elements in the user interface, improving readability and visual consistency.
+
+- **Benefits**:
+  - Provides more customization options for users.
+  - Enhances readability and user experience across the application.
 
 ---
 
@@ -112,7 +169,7 @@ The script accepts the following parameter when run from the command line:
    - Use the filter options (RecordType, Operations, Date Range, Time Range, and Keyword Search) to narrow down the log entries.
    - Click the "Refresh" button to reload the data with the applied filters.
 
-    ![Filter Options](../images/filters.png)
+    ![Filter Options](../images/ManuBar.png)
 
 5. **Explore Data**:
    - Click on log entries in the "Audit Data" to view summarized information in the preview pane.
@@ -124,8 +181,8 @@ The script accepts the following parameter when run from the command line:
 7. **Customize UI**:
    - Use the "Toggle Theme" button to switch between light and dark themes.
    - Use the "Custom Theme" button to pick custom colors for the UI.
+8. **Online Audit Data Panel**
 
-    ![Additional Features](../images/additionalfeature.png)
 
 ---
 
@@ -158,7 +215,17 @@ The script accepts the following parameter when run from the command line:
   
 ---
 
-![Full-UI](../images/loadeddata.png)
+## Screenshots
+
+![Full-UI](../images/Interfece.png){width=70%}
+
+![FeatureUpdateNew](../images/Update1.png){ width=70% }
+
+![FeatureUpdateNew2](../images/Update2.png){ width=70% }
+
+## Sample Blue Mode
+
+![FeatureUpdateNew2](../images/PowershellBlueMode.png){ width=70% }
 
 ---
 
@@ -223,4 +290,4 @@ This script is provided under the [MIT License](./License.md).
 For additional support or feature requests
 
 - please open an issue on the [GitHub repository](https://github.com/techjollof/M365UnifiedAuditLogAnalyzer).
-- You can also reach me via techjollof@gmail.com. Follow me on [linkedIn](https://www.linkedin.com/in/ndtetteh/) 
+- You can also reach me via techjollof@gmail.com. Follow me on [linkedIn](https://www.linkedin.com/in/ndtetteh/).
