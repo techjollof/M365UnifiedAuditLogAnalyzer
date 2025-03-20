@@ -886,7 +886,7 @@ $global:logDataArray = @()
 ############################ Window Configuration and  Drop event handler #################
 
 $window = New-Object System.Windows.Window
-$window.Title = "Microsoft 365 Unified Audit Log Viewer"
+$window.Title = "MAuditMaster 365 - Microsoft 365 Unified Audit Log Viewer"
 $window.Width = 1400
 $window.Height = 900
 $window.MinWidth = 800
