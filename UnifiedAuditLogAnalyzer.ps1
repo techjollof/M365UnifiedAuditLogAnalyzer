@@ -2,6 +2,8 @@ param (
     [object]$InputData   # Can be a CSV file path (string) OR in-memory data (Hashtable/Array)
 )
 
+
+
 # Load WPF assemblies
 Add-Type -AssemblyName PresentationFramework
 Add-Type -AssemblyName System.Windows.Forms
@@ -63,7 +65,7 @@ function Update-StatusBar {
     )
     $brush = [System.Windows.Media.Brushes]::$TextColor
     if (-not $statusBarText) {
-        Write-Host "statusBarText is null. Please ensure it is initialized."
+        Update-StatusBar "statusBarText is null. Please ensure it is initialized."
         return
     }
     $statusBarText.Dispatcher.Invoke([action] {
@@ -90,7 +92,7 @@ function Set-UIElementVisibility {
         $UIElement.Visibility = 'Visible'
     }
     else {
-        Write-Host "Invalid action. Use 'Hide' or 'Show'."
+        Update-StatusBar "Invalid action. Use 'Hide' or 'Show'."
     }
 }
 
@@ -468,7 +470,7 @@ function Update-Filters {
         })
 
     # Add the "All" CheckBox for RecordType to the StackPanel
-    $recordTypeCheckBoxPanel.Children.Add($script:allRecordTypeCheckBox)
+    $recordTypeCheckBoxPanel.Children.Add($script:allRecordTypeCheckBox) | Out-File
 
     # Get unique RecordType values
     $uniqueRecordTypes = $logDataArray | ForEach-Object { $_.RecordType } | Sort-Object -Unique
@@ -499,7 +501,7 @@ function Update-Filters {
                 }
             })
 
-        $recordTypeCheckBoxPanel.Children.Add($checkBox)
+        $recordTypeCheckBoxPanel.Children.Add($checkBox) | out-null
     }
 
     $recordTypeFilter.Items.Add($recordTypeCheckBoxPanel)
@@ -532,7 +534,7 @@ function Update-Filters {
         })
 
     # Add the "All" CheckBox for Operations to the StackPanel
-    $operationsCheckBoxPanel.Children.Add($script:allOperationsCheckBox)
+    $operationsCheckBoxPanel.Children.Add($script:allOperationsCheckBox) | Out-Null
 
     # Get unique Operations values
     $uniqueOperations = $logDataArray | ForEach-Object { $_.Operations } | Sort-Object -Unique
@@ -563,7 +565,7 @@ function Update-Filters {
                 }
             })
 
-        $operationsCheckBoxPanel.Children.Add($checkBox)
+        $operationsCheckBoxPanel.Children.Add($checkBox) | out-null
     }
 
     $operationsFilter.Items.Add($operationsCheckBoxPanel)
@@ -956,8 +958,6 @@ $grid.RowDefinitions.Add((New-Object System.Windows.Controls.RowDefinition -Prop
 
 ################# Status bar and progress bar ###################
 
-################# Status bar and progress bar ###################
-
 # Create a Border to wrap the Grid and add a border effect
 $borderContainer = New-Object System.Windows.Controls.Border
 $borderContainer.Margin = $uIMargin
@@ -979,7 +979,7 @@ $statusBarGrid.ColumnDefinitions.Add((New-Object System.Windows.Controls.ColumnD
 $borderContainer.Child = $statusBarGrid
 
 # Add the border container to the main grid
-$grid.Children.Add($borderContainer)
+$grid.Children.Add($borderContainer) | out-null
 [System.Windows.Controls.Grid]::SetRow($borderContainer, 3)
 [System.Windows.Controls.Grid]::SetColumnSpan($borderContainer, 3)  # Span across all columns
 
@@ -994,7 +994,7 @@ $statusBarText.FontWeight = "Bold"
 $statusBarText.Foreground = [System.Windows.Media.Brushes]::DarkSlateGray
 $statusBarText.Padding = "5,0,0,0"
 
-$statusBarGrid.Children.Add($statusBarText)
+$statusBarGrid.Children.Add($statusBarText) | out-null
 [System.Windows.Controls.Grid]::SetRow($statusBarText, 2)
 [System.Windows.Controls.Grid]::SetColumn($statusBarText, 1)
 
@@ -1015,7 +1015,7 @@ $progressBar.BorderThickness = "1"
 $progressBar.Height = 25
 
 # Add the ProgressBar to the last column of the status bar grid
-$statusBarGrid.Children.Add($progressBar)
+$statusBarGrid.Children.Add($progressBar) | out-null
 [System.Windows.Controls.Grid]::SetColumn($progressBar, 2)
 
 
@@ -1033,7 +1033,7 @@ $treeViewGrid.RowDefinitions.Add((New-Object System.Windows.Controls.RowDefiniti
 $treeViewGrid.RowDefinitions.Add((New-Object System.Windows.Controls.RowDefinition -Property @{ Height = "*" }))    # Row 1: TreeView (fills remaining space)
 
 # Add the TreeView Grid to the main Grid
-$grid.Children.Add($treeViewGrid)
+$grid.Children.Add($treeViewGrid) | out-null
 [System.Windows.Controls.Grid]::SetRow($treeViewGrid, 1)
 [System.Windows.Controls.Grid]::SetColumn($treeViewGrid, 0)
 
@@ -1049,7 +1049,7 @@ $treeViewLabel = New-Object System.Windows.Controls.Label
 $treeViewLabel.Content = "Audit Data:"
 $treeViewLabel.FontSize = 18
 $treeViewLabel.FontWeight = "Bold"
-$treeViewLabelGrid.Children.Add($treeViewLabel)
+$treeViewLabelGrid.Children.Add($treeViewLabel) | out-null
 [System.Windows.Controls.Grid]::SetColumn($treeViewLabel, 0)
 
 
@@ -1077,7 +1077,7 @@ $OnlineDataCheckBox = New-Object System.Windows.Controls.CheckBox
 $OnlineDataCheckBox.ToolTip = "Show Online Pane"
 $OnlineDataCheckBox.Margin = $uIMargin
 $OnlineDataCheckBox.VerticalAlignment = "Center"
-$OnlineDataCheckBoxPanel.Children.Add($OnlineDataCheckBox)
+$OnlineDataCheckBoxPanel.Children.Add($OnlineDataCheckBox) | out-null
 $OnlineDataCheckBox.Add_Checked({
         # Show the UI element and update the status bar
         if (Get-Command Search-UnifiedAuditLog -ErrorAction SilentlyContinue) {
@@ -1117,12 +1117,12 @@ $OnlineDataCheckBoxPanelLabel.FontSize = 14
 $OnlineDataCheckBoxPanelLabel.VerticalContentAlignment = "center"
 $OnlineDataCheckBoxPanelLabel.HorizontalContentAlignment = "Left"
 
-$treeViewLabelGrid.Children.Add($OnlineDataCheckBoxPanel)
-$OnlineDataCheckBoxPanel.Children.Add($OnlineDataCheckBoxPanelLabel)
+$treeViewLabelGrid.Children.Add($OnlineDataCheckBoxPanel) | out-null
+$OnlineDataCheckBoxPanel.Children.Add($OnlineDataCheckBoxPanelLabel) | out-null
 [System.Windows.Controls.Grid]::SetColumn($OnlineDataCheckBoxPanel, 1)
 
 # Add the TreeView Label Grid to the TreeView Grid
-$treeViewGrid.Children.Add($treeViewLabelGrid)
+$treeViewGrid.Children.Add($treeViewLabelGrid) | out-null
 [System.Windows.Controls.Grid]::SetRow($treeViewLabelGrid, 0)
 
 # Create the TreeView
@@ -1146,7 +1146,7 @@ $treeView.ItemsPanel = New-Object System.Windows.Controls.ItemsPanelTemplate -Ar
     $treeView.SetValue([System.Windows.Controls.VirtualizingStackPanel]::VirtualizationModeProperty, [System.Windows.Controls.VirtualizationMode]::Recycling))
 
 # Add the TreeView to Row 1 of the TreeView Grid
-$treeViewGrid.Children.Add($treeView)
+$treeViewGrid.Children.Add($treeView) | out-null
 [System.Windows.Controls.Grid]::SetRow($treeView, 1)
 
 # Event Handler for TreeView Selection Changed
@@ -1199,7 +1199,7 @@ $previewPaneGrid.RowDefinitions.Add((New-Object System.Windows.Controls.RowDefin
 $previewPaneGrid.RowDefinitions.Add((New-Object System.Windows.Controls.RowDefinition -Property @{ Height = "*" }))    # Row 1: TextBox (fills remaining space)
 
 # Add the Preview Pane Grid to the main Grid
-$grid.Children.Add($previewPaneGrid)
+$grid.Children.Add($previewPaneGrid) | out-null
 [System.Windows.Controls.Grid]::SetRow($previewPaneGrid, 1)
 [System.Windows.Controls.Grid]::SetColumn($previewPaneGrid, 1)
 
@@ -1221,7 +1221,7 @@ $previewPaneLabel.FontWeight = "Bold"
 $previewPaneLabel.Margin = "0,0,10,0"  # Add some margin between the Label and the Copy Button
 
 # Add the Label to Column 0 of the Label and Button Grid
-$labelButtonGrid.Children.Add($previewPaneLabel)
+$labelButtonGrid.Children.Add($previewPaneLabel) | out-null
 [System.Windows.Controls.Grid]::SetColumn($previewPaneLabel, 0)
 
 # Add a Copy Button next to the Preview Pane
@@ -1257,11 +1257,11 @@ $previewPane.BorderThickness = 1
 $previewPane.Background = [System.Windows.Media.Brushes]::White  # Subtle background color for contrast
 
 # Add the Copy Button to Column 2 of the Label and Button Grid
-$labelButtonGrid.Children.Add($copyButton)
+$labelButtonGrid.Children.Add($copyButton) | out-null
 [System.Windows.Controls.Grid]::SetColumn($copyButton, 2)
-$previewPaneGrid.Children.Add($labelButtonGrid)
+$previewPaneGrid.Children.Add($labelButtonGrid) | out-null
 [System.Windows.Controls.Grid]::SetRow($labelButtonGrid, 0)
-$previewPaneGrid.Children.Add($previewPane)
+$previewPaneGrid.Children.Add($previewPane) | out-null
 [System.Windows.Controls.Grid]::SetRow($previewPane, 1)
 
 
@@ -1279,7 +1279,7 @@ $detailedInfoPaneGrid.RowDefinitions.Add((New-Object System.Windows.Controls.Row
 $detailedInfoPaneGrid.RowDefinitions.Add((New-Object System.Windows.Controls.RowDefinition -Property @{ Height = "*" }))    # Row 1: TextBox (fills remaining space)
 
 # Add the Detailed Info Pane Grid to the main Grid
-$grid.Children.Add($detailedInfoPaneGrid)
+$grid.Children.Add($detailedInfoPaneGrid) | out-null
 [System.Windows.Controls.Grid]::SetRow($detailedInfoPaneGrid, 1)
 [System.Windows.Controls.Grid]::SetColumn($detailedInfoPaneGrid, 2)
 
@@ -1290,7 +1290,7 @@ $detailedInfoPaneLabel.FontSize = 18
 $detailedInfoPaneLabel.FontWeight = "Bold"
 
 # Add the Label to Row 0 of the Detailed Info Pane Grid
-$detailedInfoPaneGrid.Children.Add($detailedInfoPaneLabel)
+$detailedInfoPaneGrid.Children.Add($detailedInfoPaneLabel) | out-null
 [System.Windows.Controls.Grid]::SetRow($detailedInfoPaneLabel, 0)
 
 # Create the Detailed Info Pane (TextBox)
@@ -1309,7 +1309,7 @@ $detailedInfoTextBox.BorderThickness = 1
 $detailedInfoTextBox.Background = [System.Windows.Media.Brushes]::WhiteSmoke
 
 # Add the TextBox to Row 1 of the Detailed Info Pane Grid
-$detailedInfoPaneGrid.Children.Add($detailedInfoTextBox)
+$detailedInfoPaneGrid.Children.Add($detailedInfoTextBox) | out-null
 [System.Windows.Controls.Grid]::SetRow($detailedInfoTextBox, 1)
 
 ################### Filter by Search ###################
@@ -1355,14 +1355,14 @@ $keywordButton.Add_Click({
     })
 
 # Add the search components to the grid
-$searchPanel.Children.Add($searchBox)
+$searchPanel.Children.Add($searchBox) | out-null
 [System.Windows.Controls.Grid]::SetColumn($searchBox, 0)
 
-$searchPanel.Children.Add($keywordButton)
+$searchPanel.Children.Add($keywordButton) | out-null
 [System.Windows.Controls.Grid]::SetColumn($keywordButton, 1)
 
 # Add the search panel to the grid or parent container
-$grid.Children.Add($searchPanel)
+$grid.Children.Add($searchPanel) | out-null
 [System.Windows.Controls.Grid]::SetRow($searchPanel, 0)  #
 [System.Windows.Controls.Grid]::SetColumn($searchPanel, 0)  
 
@@ -1383,7 +1383,7 @@ $filterPanel.Orientation = "Horizontal"
 $filterPanel.HorizontalAlignment = "Stretch"
 $filterPanel.VerticalAlignment = "Center"
 $filterPanel.Margin = "10"
-$grid.Children.Add($filterPanel)
+$grid.Children.Add($filterPanel) | out-null
 [System.Windows.Controls.Grid]::SetRow($filterPanel, 0)
 [System.Windows.Controls.Grid]::SetColumn($filterPanel, 1)
 
@@ -1394,7 +1394,7 @@ $filtersLabel.Margin = $uIMargin
 $filtersLabel.VerticalAlignment = "Center"
 $filtersLabel.FontSize = "16"
 $filtersLabel.FontWeight = "Bold"
-$filterPanel.Children.Add($filtersLabel)
+$filterPanel.Children.Add($filtersLabel) | out-null
 
 # Group RecordType Label and Dropdown
 $recordTypeGroup = New-Object System.Windows.Controls.StackPanel
@@ -1424,8 +1424,8 @@ $recordTypeFilter.Add_SelectionChanged({
     })
 
 # Add Label and Dropdown to the RecordType Group
-$recordTypeGroup.Children.Add($recordTypeLabel)
-$recordTypeGroup.Children.Add($recordTypeFilter)
+$recordTypeGroup.Children.Add($recordTypeLabel) | out-null
+$recordTypeGroup.Children.Add($recordTypeFilter) | out-null
 
 # Group Operations Label and Dropdown
 $operationsGroup = New-Object System.Windows.Controls.StackPanel
@@ -1455,8 +1455,8 @@ $operationsFilter.Add_SelectionChanged({
     })
 
 # Add Label and Dropdown to the Operations Group
-$operationsGroup.Children.Add($operationsLabel)
-$operationsGroup.Children.Add($operationsFilter)
+$operationsGroup.Children.Add($operationsLabel) | out-null
+$operationsGroup.Children.Add($operationsFilter) | out-null
 
 # Group Date Range Label, Start Date, and End Date
 $dateRangeGroup = New-Object System.Windows.Controls.StackPanel
@@ -1492,9 +1492,9 @@ $endDatePicker.Add_SelectedDateChanged({
     })
 
 # Add Date Range components to the Date Range Group
-$dateRangeGroup.Children.Add($dateRangeLabel)
-$dateRangeGroup.Children.Add($startDatePicker)
-$dateRangeGroup.Children.Add($endDatePicker)
+$dateRangeGroup.Children.Add($dateRangeLabel) | out-null
+$dateRangeGroup.Children.Add($startDatePicker) | out-null
+$dateRangeGroup.Children.Add($endDatePicker) | out-null
 
 # Group Time Label, Start Time, and End Time
 $timeGroup = New-Object System.Windows.Controls.StackPanel
@@ -1548,13 +1548,13 @@ $timeValues | ForEach-Object {
 }
 
 # Add Time components to the Time Group
-$timeGroup.Children.Add($timeLabel)
-$timeGroup.Children.Add($startTimeComboBox)
-$timeGroup.Children.Add($endTimeComboBox)
-$filterPanel.Children.Add($recordTypeGroup)
-$filterPanel.Children.Add($operationsGroup)
-$filterPanel.Children.Add($dateRangeGroup)
-$filterPanel.Children.Add($timeGroup)
+$timeGroup.Children.Add($timeLabel) | out-null
+$timeGroup.Children.Add($startTimeComboBox) | out-null
+$timeGroup.Children.Add($endTimeComboBox) | out-null
+$filterPanel.Children.Add($recordTypeGroup) | out-null
+$filterPanel.Children.Add($operationsGroup) | out-null
+$filterPanel.Children.Add($dateRangeGroup) | out-null
+$filterPanel.Children.Add($timeGroup) | out-null
 
 ################ Other feature ####################
 
@@ -1565,7 +1565,7 @@ $buttonPanel.HorizontalAlignment = "Stretch"
 $buttonPanel.VerticalAlignment = "Center"
 $buttonPanel.Margin = "10"
 
-$grid.Children.Add($buttonPanel)
+$grid.Children.Add($buttonPanel) | out-null
 [System.Windows.Controls.Grid]::SetRow($buttonPanel, 0)
 [System.Windows.Controls.Grid]::SetColumn($buttonPanel, 2)
 
@@ -1733,7 +1733,7 @@ $themeButton.Add_Click({
         $script:currentThemeIndex = ($script:currentThemeIndex + 1) % $themes.Count
         Update-UITheme -theme $themes[$script:currentThemeIndex]
 
-        write-host $script:currentThemeIndex
+        # Update-StatusBar $script:currentThemeIndex
 
         $OnlineDataCheckBoxPanel.Background = $themes[$script:currentThemeIndex].foreground 
         $OnlineDataCheckBoxPanelLabel.Foreground = $themes[$script:currentThemeIndex].background
@@ -1949,15 +1949,15 @@ $connectEXOButton.Add_Click({
 ###################### Add buttons #######################
 
 # Add buttons to the button panel
-$buttonPanel.Children.Add($exportJsonButton)
-$buttonPanel.Children.Add($exportCsvButton)
-$buttonPanel.Children.Add($refreshButton)
-$buttonPanel.Children.Add($toggleButtonExpandCollapse)
-$buttonPanel.Children.Add($resetFiltersButton)
-$buttonPanel.Children.Add($clearLoadedData)
-$buttonPanel.Children.Add($connectEXOButton)
-$buttonPanel.Children.Add($themeButton)
-$buttonPanel.Children.Add($customThemeButton)
+$buttonPanel.Children.Add($exportJsonButton) | out-null
+$buttonPanel.Children.Add($exportCsvButton) | out-null
+$buttonPanel.Children.Add($refreshButton) | out-null
+$buttonPanel.Children.Add($toggleButtonExpandCollapse) | out-null
+$buttonPanel.Children.Add($resetFiltersButton) | out-null
+$buttonPanel.Children.Add($clearLoadedData) | out-null
+$buttonPanel.Children.Add($connectEXOButton) | out-null
+$buttonPanel.Children.Add($themeButton) | out-null
+$buttonPanel.Children.Add($customThemeButton) | out-null
 
 
 
@@ -1967,7 +1967,7 @@ $buttonPanel.Children.Add($customThemeButton)
 $auditSearchContainer = New-Object System.Windows.Controls.Grid
 $auditSearchContainer.Margin = "5"
 $auditSearchContainer.Visibility = "Collapse"
-$grid.Children.Add($auditSearchContainer)
+$grid.Children.Add($auditSearchContainer) | out-null
 [System.Windows.Controls.Grid]::SetRow($auditSearchContainer, 2)
 [System.Windows.Controls.Grid]::SetColumn($auditSearchContainer, 0)
 [System.Windows.Controls.Grid]::SetColumnSpan($auditSearchContainer, 3)
@@ -1981,7 +1981,7 @@ $auditFieldsPanel = New-Object System.Windows.Controls.WrapPanel
 $auditFieldsPanel.Orientation = "Horizontal"
 $auditFieldsPanel.HorizontalAlignment = "Left"
 $auditFieldsPanel.Margin = "0,0,0,10"
-$auditSearchContainer.Children.Add($auditFieldsPanel)
+$auditSearchContainer.Children.Add($auditFieldsPanel) | out-null
 [System.Windows.Controls.Grid]::SetRow($auditFieldsPanel, 1)
 
 # Function to add a label and input control to the WrapPanel
@@ -2004,7 +2004,7 @@ function Add-InputControl {
     $label = New-Object System.Windows.Controls.Label
     $label.Content = $LabelText
     $label.Margin = "0,0,0,2"  # Small margin below label
-    $stackPanel.Children.Add($label)
+    $stackPanel.Children.Add($label) | out-null
 
     # Add Input Control
     switch ($ControlType) {
@@ -2046,8 +2046,8 @@ function Add-InputControl {
         }
     }
 
-    $stackPanel.Children.Add($control)
-    $auditFieldsPanel.Children.Add($stackPanel)
+    $stackPanel.Children.Add($control) | out-null
+    $auditFieldsPanel.Children.Add($stackPanel) | out-null
 
     return $control
 }
@@ -2074,7 +2074,7 @@ $searchButtonContainer = New-Object System.Windows.Controls.StackPanel
 $searchButtonContainer.Orientation = "Horizontal"
 $searchButtonContainer.HorizontalAlignment = "left"
 $searchButtonContainer.Margin = "0,10,0,10"
-$auditSearchContainer.Children.Add($searchButtonContainer)
+$auditSearchContainer.Children.Add($searchButtonContainer) | out-null
 [System.Windows.Controls.Grid]::SetRow($searchButtonContainer, 0)
 
 
@@ -2162,14 +2162,14 @@ $auditSearchButton.Add_Click({
                 $errorMessage = $_.Exception.Message
                 $statusBarText.Text = $_
                 Update-StatusBar -Message "Error: $errorMessage"
-                Write-Host "Error: $_"
+                # Write-Host "Error: $_"
             }
         }
 
         $isUpdatingCheckBoxes = $false
     })
 
-$searchButtonContainer.Children.Add($auditSearchButton)
+$searchButtonContainer.Children.Add($auditSearchButton) | out-null | Out-Null
 
 
 
@@ -2190,7 +2190,7 @@ if ($PSBoundParameters.ContainsKey('InputData')) {
     }
 
     if ($null -ne $global:logDataArray) {
-        Update-Filters
+        Update-Filters 
         Update-TreeView
         Update-StatusBar -Message "Data loaded successfully from input parameter."
     }
