@@ -63,6 +63,12 @@ $log = search-UnifiedAuditLog -EndDate 3/3/2025 -StartDate 1/3/2025 -ResultSize 
 .\UnifiedAuditLogAnalyzer.ps1 -InputData $log
 ```
 
+## Availability
+
+- As script to run via powershell
+- As EXE program file, portable.
+- Check the release page to download
+
 ### Analyzer UI
 
 ![UI](./images/Interfece.png){width=70%}

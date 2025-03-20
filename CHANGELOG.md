@@ -1,6 +1,6 @@
 # Change Log - M365 Unified Audit Log Analyzer (GUI Version)
 
-## Version 1.1.0
+## Version 2.0.0
 
 ### Release Date: 3/20/2025
 
