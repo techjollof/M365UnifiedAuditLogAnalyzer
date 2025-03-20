@@ -1,5 +1,24 @@
 # Change Log - M365 Unified Audit Log Analyzer (GUI Version)
 
+## Table of Contents
+
+- [Version 2.0.0](#version-200)
+  - [Release Date: 3/20/2025](#release-date-3202025)
+  - [New Features](#new-features)
+    - [M365 Audit Query - Online Panel](#1-m365-audit-query---online-panel)
+    - [Online Data Toggle](#2-online-data-toggle)
+    - [Connect/Disconnect EXO](#3-connectdisconnect-exo)
+  - [Screenshots](#screeshots)
+  - [Updated Features](#updated-features)
+    - [Toggle Theme and Custom Theme](#toggle-theme-and-custom-theme)
+  - [Bug Fixes](#bug-fixes)
+  - [Known Issues](#known-issues)
+  - [Future Enhancements](#future-enhancements)
+  - [Contributors](#contributors)
+  - [Feedback and Support](#feedback-and-support)
+
+---
+
 ## Version 2.0.0
 
 ### Release Date: 3/20/2025
