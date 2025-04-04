@@ -3,7 +3,9 @@
 ## Table of Contents
 
 - [Unified Audit Log Analyzer](#unified-audit-log-analyzer)
+
   - [Unified Audit Log Analyzer (GUI)](#unified-audit-log-analyzer-gui)
+  
   - [Expand-UnifiedAuditLogReport (Non-GUI)](#expand-unifiedauditlogreport-non-gui)
 
 ## Unified Audit Log Analyzer (GUI) - Advanced Unified Audit Log Analyzer
