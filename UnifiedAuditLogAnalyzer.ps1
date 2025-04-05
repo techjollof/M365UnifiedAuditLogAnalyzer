@@ -1,3 +1,4 @@
+[CmdletBinding()]
 param (
     [object]$InputData   # Can be a CSV file path (string) OR in-memory data (Hashtable/Array)
 )
@@ -8,6 +9,9 @@ param (
 Add-Type -AssemblyName PresentationFramework
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
+Add-Type -AssemblyName PresentationCore
+Add-Type -AssemblyName WindowsBase
+
 
 
 ################### All functions ###################################
@@ -470,7 +474,7 @@ function Update-Filters {
         })
 
     # Add the "All" CheckBox for RecordType to the StackPanel
-    $recordTypeCheckBoxPanel.Children.Add($script:allRecordTypeCheckBox) | Out-File
+    $recordTypeCheckBoxPanel.Children.Add($script:allRecordTypeCheckBox) | Out-null
 
     # Get unique RecordType values
     $uniqueRecordTypes = $logDataArray | ForEach-Object { $_.RecordType } | Sort-Object -Unique
@@ -1926,10 +1930,10 @@ $connectEXOButton.Add_Click({
                 }
                 else {
                     Update-StatusBar -Message "Exchange Online module is missing. Install it using, use -Scope CurrentUser if you are not admin
-                1️⃣ Open PowerShell as Administrator
-                2️⃣ Run: Set-ExecutionPolicy RemoteSigned # -Scope CurrentUser
-                3️⃣ Run: Install-Module ExchangeOnlineManagement # -Scope CurrentUser
-                4️⃣ Retry connecting!" -TextColor "Red"
+                1 Open PowerShell as Administrator
+                2 Run: Set-ExecutionPolicy RemoteSigned # -Scope CurrentUser
+                3 Run: Install-Module ExchangeOnlineManagement # -Scope CurrentUser
+                4 Retry connecting!" -TextColor "Red"
                 }
             }
         }
@@ -2147,12 +2151,23 @@ $auditSearchButton.Add_Click({
                 if ($formattedCheckBox.IsChecked) {
                     $params['Formatted'] = $true
                 }
+
+                # Check if the checkbox is checked
     
                 # Call the Search-UnifiedAuditLog function
                 $global:logDataArray = @()
                 
-                $global:logDataArray = Search-UnifiedAuditLog @params
-    
+                $global:logDataArray += Search-UnifiedAuditLog @params
+                # Write-Host $Error
+
+                $searchBox.Text = ""
+                $recordTypeFilter.SelectedIndex = -1
+                $operationsFilter.SelectedIndex = -1
+                $startDatePicker.SelectedDate = $null
+                $endDatePicker.SelectedDate = $null
+                $startTimeComboBox.Text = "00:00:00"
+                $endTimeComboBox.Text = "23:59:59"
+            
                 # Display the results
                 if ($global:logDataArray ) {
                     Update-Filters
@@ -2201,5 +2216,5 @@ if ($PSBoundParameters.ContainsKey('InputData')) {
 }
 
 # Show Window
-$window.child |Out-Null
-$window.ShowDialog() | Out-Null
+$window.child #|Out-Null
+$window.ShowDialog() #|# Out-Null
